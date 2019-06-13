@@ -1,5 +1,5 @@
 #include <cg3/viewer/mainwindow.h>
-#include "managers/delaunaymanager.h"
+#include "managers/CVRPmanager.h"
 
 int main(int argc, char *argv[]) {
 
@@ -11,8 +11,8 @@ int main(int argc, char *argv[]) {
     gui.set2DMode(true);
     gui.setSelectLeftButton();
 
-    DelaunayManager dm(&gui);
-    gui.addManager(&dm, "Delaunay Manager");
+    CVRPmanager dm(&gui);
+    gui.addManager(&dm, "CVRPmanager");
 
     //Show the GUI
     gui.updateGlCanvas();

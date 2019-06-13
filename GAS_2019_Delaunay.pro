@@ -42,16 +42,14 @@ DISTFILES += \
 
 SOURCES += \
     main.cpp \
-    managers/delaunaymanager.cpp \
-    utils/delaunay_checker.cpp \
+    managers/CVRPmanager.cpp \
     utils/fileutils.cpp
 
 FORMS += \
-    managers/delaunaymanager.ui
+    managers/CVRPmanager.ui
 
 HEADERS += \
-    managers/delaunaymanager.h \
-    utils/delaunay_checker.h \
+    managers/CVRPmanager.h \
     utils/fileutils.h
 
 

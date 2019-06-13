@@ -1,5 +1,5 @@
-#include "delaunaymanager.h"
-#include "ui_delaunaymanager.h"
+#include "CVRPmanager.h"
+#include "ui_CVRPmanager.h"
 
 #include <QMessageBox>
 #include <QFileDialog>
@@ -8,7 +8,6 @@
 #include <ctime>
 
 #include "utils/fileutils.h"
-#include "utils/delaunay_checker.h"
 
 #include <cg3/data_structures/arrays/arrays.h>
 #include <cg3/utilities/timer.h>
@@ -48,9 +47,9 @@ const cg3::Pointd SCENECENTER(0,0,0);
 /**
  * @brief Default constructor of the manager
  */
-DelaunayManager::DelaunayManager(QWidget *parent) :
+CVRPmanager::CVRPmanager(QWidget *parent) :
     QFrame(parent),
-    ui(new Ui::DelaunayManager),
+    ui(new Ui::CVRPmanager),
     mainWindow(static_cast<cg3::viewer::MainWindow&>(*parent)),
     boundingBox(cg3::Point2Dd(-BOUNDINGBOX, -BOUNDINGBOX),
                 cg3::Point2Dd(BOUNDINGBOX, BOUNDINGBOX))    
@@ -86,7 +85,7 @@ DelaunayManager::DelaunayManager(QWidget *parent) :
 /**
  * @brief Destructor of the manager
  */
-DelaunayManager::~DelaunayManager() {
+CVRPmanager::~CVRPmanager() {
     //Try to avoid using dynamic objects whenever it is possible.
     //
     //In case you allocated dynamic objects in this manager, you
@@ -134,7 +133,7 @@ DelaunayManager::~DelaunayManager() {
  * Note that the vector could contain duplicates.
  * @param[in] points Vector of points
  */
-void DelaunayManager::computeDelaunayTriangulation(const std::vector<cg3::Point2Dd>& inputPoints) {
+void CVRPmanager::computeDelaunayTriangulation(const std::vector<cg3::Point2Dd>& inputPoints) {
     //Launch your Delaunay triangulation algorithm here on the vector "inputPoints" in input
     //(note that the vector could contain duplicates!!).
     //Here you should call an algorithm (obviously defined in ANOTHER FILE!) which
@@ -151,7 +150,7 @@ void DelaunayManager::computeDelaunayTriangulation(const std::vector<cg3::Point2
  * @brief Launch incremental algorithm on a Delaunay Triangulation given a point
  * @param p Point clicked
  */
-void DelaunayManager::addPointToDelaunayTriangulation(const cg3::Point2Dd& p) {
+void CVRPmanager::addPointToDelaunayTriangulation(const cg3::Point2Dd& p) {
     //Here you have to launch the incremental algorithm for the insertion of a new single point into the current triangulation.
     /********************************************************************************************************************/
 
@@ -164,7 +163,7 @@ void DelaunayManager::addPointToDelaunayTriangulation(const cg3::Point2Dd& p) {
 /**
  * @brief Clear data of the Delaunay Triangulation
  */
-void DelaunayManager::clearDelaunayTriangulation() {
+void CVRPmanager::clearDelaunayTriangulation() {
     //Clear here your Delaunay Triangulation data structure.
     /********************************************************************************************************************/
 
@@ -178,7 +177,7 @@ void DelaunayManager::clearDelaunayTriangulation() {
 /**
  * @brief Draw the Delaunay Triangulation in the canvas
  */
-void DelaunayManager::drawDelaunayTriangulation() {
+void CVRPmanager::drawDelaunayTriangulation() {
     //Note that you could keep a Drawable Delaunay Triangulation object always
     //rendered (even when it is empty), instead of deleting it from the main
     //window and re-draw it again.
@@ -202,7 +201,7 @@ void DelaunayManager::drawDelaunayTriangulation() {
 /**
  * @brief Erase drawn Delaunay Triangulation from the canvas
  */
-void DelaunayManager::eraseDrawnDelaunayTriangulation() {
+void CVRPmanager::eraseDrawnDelaunayTriangulation() {
     //Note that you could keep a Drawable Delaunay Triangulation object always
     //rendered (even when it is empty), instead of deleting it from the main
     //window and re-draw it again.
@@ -232,7 +231,7 @@ void DelaunayManager::eraseDrawnDelaunayTriangulation() {
  * @brief Set whether or not the bounding triangle is visible
  * @param visible True if the bounding box is set to be visible, false otherwise
  */
-void DelaunayManager::setVisibilityBoundingTriangle(const bool visible)
+void CVRPmanager::setVisibilityBoundingTriangle(const bool visible)
 {
     //Set the visibility of your bounding triangle here
     /********************************************************************************************************************/
@@ -246,7 +245,7 @@ void DelaunayManager::setVisibilityBoundingTriangle(const bool visible)
 /**
  * @brief Check if the current triangulation is a Delaunay Triangulation
  */
-void DelaunayManager::checkTriangulation() {
+void CVRPmanager::checkTriangulation() {
 	std::vector<cg3::Point2Dd> points;
     cg3::Array2D<unsigned int> triangles;
 
@@ -268,15 +267,6 @@ void DelaunayManager::checkTriangulation() {
     /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
 
     /********************************************************************************************************************/
-
-    if (points.size() >= 3) {
-        if (DelaunayTriangulation::Checker::isDeulaunayTriangulation(points, triangles)) { //Check
-            QMessageBox::information(this, "Triangulation checking", "Success: it is a Delaunay triangulation!");
-        }
-        else {
-            QMessageBox::warning(this, "Triangulation checking", "Error: it is NOT a Delaunay triangulation!");
-        }
-    }
 }
 
 
@@ -313,7 +303,7 @@ void DelaunayManager::checkTriangulation() {
  * on the input points (a vector) of this manager and measure
  * its time efficiency.
  */
-void DelaunayManager::launchAlgorithmAndMeasureTime() { //Do not write code here
+void CVRPmanager::launchAlgorithmAndMeasureTime() { //Do not write code here
     //Output message
     std::cout << "Executing the algorithm for " << this->points.size() << " points..." << std::endl;
 
@@ -334,7 +324,7 @@ void DelaunayManager::launchAlgorithmAndMeasureTime() { //Do not write code here
  * @brief Change camera of the canvas to fit the scene
  * on the bounding box in which the points can be added.
  */
-void DelaunayManager::fitScene() { //Do not write code here
+void CVRPmanager::fitScene() { //Do not write code here
     mainWindow.fitScene(SCENECENTER, SCENERADIUS);
 }
 
@@ -348,7 +338,7 @@ void DelaunayManager::fitScene() { //Do not write code here
  *
  * Load input points from a file.
  */
-void DelaunayManager::on_loadPointsPushButton_clicked() { //Do not write code here
+void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
     //File selector
     QString filename = QFileDialog::getOpenFileName(nullptr,
                        "Open points",
@@ -379,7 +369,7 @@ void DelaunayManager::on_loadPointsPushButton_clicked() { //Do not write code he
  *
  * It allows us to clear our Delaunay Triangulation input points.
  */
-void DelaunayManager::on_clearPointsPushButton_clicked() { //Do not write code here
+void CVRPmanager::on_clearPointsPushButton_clicked() { //Do not write code here
     //Clear the vector of points
     this->points.clear();
 
@@ -390,6 +380,7 @@ void DelaunayManager::on_clearPointsPushButton_clicked() { //Do not write code h
     eraseDrawnDelaunayTriangulation();
 
     //Clear timer data
+
     ui->timeLabel->setText("");
 }
 
@@ -405,7 +396,7 @@ void DelaunayManager::on_clearPointsPushButton_clicked() { //Do not write code h
  *
  * @param[in] p Point clicked
  */
-void DelaunayManager::point2DClicked(const cg3::Point2Dd& p) { //Do not write code here
+void CVRPmanager::point2DClicked(const cg3::Point2Dd& p) { //Do not write code here
     if (!boundingBox.isInside(p)) {
         //Error message if the point is not inside the bounding box
         QMessageBox::warning(this, "Cannot insert point", "Point [" +
@@ -431,7 +422,7 @@ void DelaunayManager::point2DClicked(const cg3::Point2Dd& p) { //Do not write co
  * @param[in] arg1 It contains Qt::Checked if the checkbox is checked,
  * Qt::Unchecked otherwise
  */
-void DelaunayManager::on_enablePickingCheckBox_stateChanged(int arg1) { //Do not write code here
+void CVRPmanager::on_enablePickingCheckBox_stateChanged(int arg1) { //Do not write code here
     if (arg1 == Qt::Checked){
         mainWindow.setSelectLeftButton();
     }
@@ -446,7 +437,7 @@ void DelaunayManager::on_enablePickingCheckBox_stateChanged(int arg1) { //Do not
  * It allows us to reset the camera of the canvas to
  * show/center the scene in the bounding box.
  */
-void DelaunayManager::on_resetScenePushButton_clicked() { //Do not write code here
+void CVRPmanager::on_resetScenePushButton_clicked() { //Do not write code here
     fitScene();
 }
 
@@ -456,7 +447,7 @@ void DelaunayManager::on_resetScenePushButton_clicked() { //Do not write code he
  * With this button we can generate files that contains
  * points which are inside the bounding box.
  */
-void DelaunayManager::on_generatePointsFilePushButton_clicked() { //Do not write code here
+void CVRPmanager::on_generatePointsFilePushButton_clicked() { //Do not write code here
     QString selectedFilter;
     QString filename = QFileDialog::getSaveFileName(nullptr,
                        "File containing points",
@@ -480,7 +471,7 @@ void DelaunayManager::on_generatePointsFilePushButton_clicked() { //Do not write
  *
  * It allows us to check if the triangulation is a Delaunay one.
  */
-void DelaunayManager::on_checkTriangulationPushButton_clicked() {
+void CVRPmanager::on_checkTriangulationPushButton_clicked() {
 	checkTriangulation();
 }
 
@@ -492,7 +483,7 @@ void DelaunayManager::on_checkTriangulationPushButton_clicked() {
  * @param[in] arg1 It contains Qt::Checked if the checkbox is checked,
  * Qt::Unchecked otherwise
  */
-void DelaunayManager::on_showBoundingTriangleCheckBox_stateChanged(int arg1) {
+void CVRPmanager::on_showBoundingTriangleCheckBox_stateChanged(int arg1) {
     //If arg1 is Qt::Checked, then you must set the drawable triangulation
     //to draw the bounding triangle as well
     setVisibilityBoundingTriangle(arg1 == Qt::Checked);

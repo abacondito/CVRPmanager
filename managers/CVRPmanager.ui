@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DelaunayManager</class>
- <widget class="QFrame" name="DelaunayManager">
+ <class>CVRPmanager</class>
+ <widget class="QFrame" name="CVRPmanager">
   <property name="geometry">
    <rect>
     <x>0</x>

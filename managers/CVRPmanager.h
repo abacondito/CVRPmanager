@@ -1,5 +1,5 @@
-#ifndef DELAUNAYMANAGER_H
-#define DELAUNAYMANAGER_H
+#ifndef CVRPMANAGER_H
+#define CVRPMANAGER_H
 
 #include <QFrame>
 
@@ -9,18 +9,18 @@
 
 
 namespace Ui {
-    class DelaunayManager;
+    class CVRPmanager;
 }
 
-class DelaunayManager : public QFrame {
+class CVRPmanager : public QFrame {
     Q_OBJECT
 
 public:
 
     /* ----- Constructors/destructors ----- */
 
-    explicit DelaunayManager(QWidget *parent = 0);
-    ~DelaunayManager();
+    explicit CVRPmanager(QWidget *parent = 0);
+    ~CVRPmanager();
 
 
 private:
@@ -28,7 +28,7 @@ private:
     /* ----- Private fields ----- */
 
     //UI fields
-    Ui::DelaunayManager *ui;
+    Ui::CVRPmanager *ui;
     cg3::viewer::MainWindow& mainWindow;    
 
     //It is const because, once defined and initialized, it will never change!
@@ -112,4 +112,4 @@ private slots:
     void on_showBoundingTriangleCheckBox_stateChanged(int arg1);
 };
 
-#endif // DELAUNAYMANAGER_H
+#endif // CVRPMANAGER_H
