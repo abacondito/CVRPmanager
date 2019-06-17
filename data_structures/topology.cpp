@@ -39,3 +39,13 @@ void Topology::setCapacity(int value)
 {
     capacity = value;
 }
+
+std::vector<Node> Topology::getNodes() const
+{
+    return nodes;
+}
+
+void Topology::setNodes(const std::vector<Node> &value)
+{
+    nodes = value;
+}

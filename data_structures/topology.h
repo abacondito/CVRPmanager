@@ -21,6 +21,9 @@ public:
     int getCapacity() const;
     void setCapacity(int value);
 
+    std::vector<Node> getNodes() const;
+    void setNodes(const std::vector<Node> &value);
+
 protected:
     int vehicle_num=0;
     int node_num=0;

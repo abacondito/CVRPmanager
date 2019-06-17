@@ -41,6 +41,7 @@ DISTFILES += \
     LICENSE
 
 SOURCES += \
+    algorithms/cvrp.cpp \
     data_structures/node.cpp \
     data_structures/topology.cpp \
     main.cpp \
@@ -51,6 +52,7 @@ FORMS += \
     managers/CVRPmanager.ui
 
 HEADERS += \
+    algorithms/cvrp.h \
     data_structures/node.h \
     data_structures/topology.h \
     managers/CVRPmanager.h \
