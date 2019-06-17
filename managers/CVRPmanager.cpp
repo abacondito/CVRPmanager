@@ -353,7 +353,8 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
         eraseDrawnDelaunayTriangulation();
 
         //Load input points in the vector (deleting the previous ones)
-        this->points = FileUtils::getPointsFromFile(filename.toStdString());
+        //this->points = FileUtils::getPointsFromFile(filename.toStdString());
+        FileUtils::getTopologyFromFile(filename.toStdString());
 
         //Launch the algorithm on the current vector of points and measure
         //its efficiency with a timer

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <random>
 #include <iomanip>
+#include <cg3/core/cg3/geometry/2d/point2d.h>
 
 namespace FileUtils {
 
@@ -49,6 +50,41 @@ void generateRandomPointFile(const std::string& filename, double limit, int n) {
     }
 
     outfile.close();
+}
+
+Topology getTopologyFromFile(const std::string& filename) {
+
+    Topology topology = Topology();
+    std::ifstream infile;
+    infile.open(filename);
+
+    int nNodes,nVehicles, aux, cap,delivery,pickup;
+    infile >> nNodes;
+    topology.setNode_num(nNodes);
+    infile >> nVehicles;
+    infile >> nVehicles;
+    topology.setVehicle_num(nVehicles);
+
+    double x = 0.0;
+    double y = 0.0;
+    infile >> std::setprecision(10) >> x >> std::setprecision(10) >> y >> aux >> cap;
+    Node start = Node();
+    start.setCoordinates(cg3::Point2Dd(x,y));
+    topology.setCapacity(cap);
+    topology.addNode(start);
+
+    for (int i = 0; i < nNodes; i++) {
+        infile >> std::setprecision(10) >> x >> std::setprecision(10) >> y >> delivery >> pickup >> aux;
+        Node node = Node();
+        node.setCoordinates(cg3::Point2Dd(x,y));
+        node.setDelivery(delivery);
+        node.setPickup(pickup);
+        topology.addNode(node);
+    }
+
+    infile.close();
+
+    return topology;
 }
 
 

@@ -41,6 +41,8 @@ DISTFILES += \
     LICENSE
 
 SOURCES += \
+    data_structures/node.cpp \
+    data_structures/topology.cpp \
     main.cpp \
     managers/CVRPmanager.cpp \
     utils/fileutils.cpp
@@ -49,6 +51,8 @@ FORMS += \
     managers/CVRPmanager.ui
 
 HEADERS += \
+    data_structures/node.h \
+    data_structures/topology.h \
     managers/CVRPmanager.h \
     utils/fileutils.h
 
