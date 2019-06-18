@@ -12,6 +12,8 @@
 #include <cg3/data_structures/arrays/arrays.h>
 #include <cg3/utilities/timer.h>
 
+#include <algorithms/cvrp.h>
+
 
 //Limits for the bounding box
 //It defines where points can be added
@@ -354,10 +356,12 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
 
         //Load input points in the vector (deleting the previous ones)
         //this->points = FileUtils::getPointsFromFile(filename.toStdString());
-        FileUtils::getTopologyFromFile(filename.toStdString());
+
+        Topology topology = FileUtils::getTopologyFromFile(filename.toStdString());
 
         //Launch the algorithm on the current vector of points and measure
         //its efficiency with a timer
+        cWseq(topology);
         launchAlgorithmAndMeasureTime();
 
         //Draw Delaunay Triangulation

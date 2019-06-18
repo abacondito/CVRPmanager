@@ -4,8 +4,12 @@
 std::array<size_t,2> getMaxIndexes(cg3::Array2D<double> matrix){
 
     size_t i,j;
-    double tmp=0;
+    double tmp=0.0;
     std::array<size_t,2> indexes;
+    indexes[0] = 0;
+    indexes[1] = 0;
+    size_t size_x=matrix.getSizeX();
+    size_t size_y=matrix.getSizeY();
 
     for (i=0;i<matrix.getSizeX();i++) {
         for (j=0;j<matrix.getSizeY();j++) {
@@ -22,13 +26,11 @@ std::array<size_t,2> getMaxIndexes(cg3::Array2D<double> matrix){
 
 }
 
-void CWseq(const Topology& topology){
+void cWseq(const Topology& topology){
 
 
 
     size_t i,j,nNodes;
-
-
 
     cg3::Point2Dd pointI,pointJ;
 
@@ -52,32 +54,54 @@ void CWseq(const Topology& topology){
 
 
     //Calcolo della Tabella dei Saving
-    for (i=0;i<nNodes;i++) {
-        for (j=0;j<nNodes;j++) {
-            if(saveTable(i,j)>0.0){
+    for (i=1;i<nNodes;i++) {
+        for (j=2;j<nNodes;j++) {
+            if((saveTable(j,i)==0.0) && (i!=j)){
                 saveTable(i,j) = distTable(i,0)+distTable(0,j)-distTable(i,j);
-                saveTable(j,i) = 0.0;
             }
         }
     }
 
     //Calcolo della Lista dei Saving
-    std::vector<size_t,size_t> saveList;
+    std::vector<std::array<size_t,2>> saveList;
 
 
 
 
-    std::array<size_t,2> aux;
+    std::array<size_t,2> aux;   
+    aux= getMaxIndexes(saveTable);
 
-    do{
+    while(saveTable(aux[0],aux[1])!=0.0){
+        saveList.push_back(aux);
+        saveTable(aux[0],aux[1])=0.0;
+        aux= getMaxIndexes(saveTable);
+    }
+
+    /*do{
 
         aux= getMaxIndexes(saveTable);
-        saveList.push_back(aux[0],aux[1]);
-        saveTable(aux[0],aux[1])=0.0;
+        saveList.push_back(aux);
+        saveTable(aux[0],aux[1])=-1.0;
 
-    }while(saveTable(aux[0],aux[1])!=0.0);
+    }while(saveTable(aux[0],aux[1])!=0.0);*/
+    
+    
+
+    Routes routes;
+    std::vector<Node> tmpRoute;
 
 
+    for (i=0;i<topology.getVehicle_num();i++) {
+
+        tmpRoute.push_back(nodeList[0]);
+        size_t index = 0;
+
+        //tmpRoute.push_back(saveList. nodeList[index])
+        
+    }
+
+    int z;
+    z =1;
 
 }
 
