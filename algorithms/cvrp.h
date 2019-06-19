@@ -12,8 +12,8 @@ std::array<size_t,2> getMaxIndexes(cg3::Array2D<double> matrix);
 void bootRoute(const Topology& topology);
 void growRoute(const Topology& topology);
 
-cg3::Array2D<double>& computeDistTable(std::vector<Node>& nodes);
-cg3::Array2D<double>& computeSaveTable(cg3::Array2D<double>& distTable);
+void computeDistTable(const std::vector<Node>& nodes, cg3::Array2D<double>& table);
+void computeSaveTable(const cg3::Array2D<double>& distTable, cg3::Array2D<double>& saveTable);
 
 void cWseq(const Topology& topology);
 void cWpar(const Topology& topology);

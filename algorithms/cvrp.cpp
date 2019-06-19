@@ -26,21 +26,59 @@ std::array<size_t,2> getMaxIndexes(cg3::Array2D<double> matrix){
 
 }
 
-void cWseq(const Topology& topology){
 
 
+void computeDistTable(const std::vector<Node>& nodes, cg3::Array2D<double>& table ){
 
     size_t i,j,nNodes;
 
     cg3::Point2Dd pointI,pointJ;
 
-    std::vector<Node> nodeList=topology.getNodes();
+    nNodes=nodes.size();
 
+    //cg3::Array2D<double> distTable = cg3::Array2D<double>(nNodes,nNodes,0.0);
+
+
+    for (i=0;i<nNodes;i++) {
+        pointI=nodes[i].getCoordinates();
+
+        for (j=0;j<nNodes;j++) {
+            pointJ=nodes[j].getCoordinates();
+            table(i,j)=pointI.dist(pointJ);
+        }
+    }
+
+}
+
+void computeSaveTable(const cg3::Array2D<double>& distTable, cg3::Array2D<double>& saveTable){
+
+    size_t i,j;
+    size_t nNodes = distTable.getSizeX();
+
+    for (i=1;i<nNodes;i++) {
+        for (j=2;j<nNodes;j++) {
+            if((saveTable(j,i)==0.0) && (i!=j)){
+                saveTable(i,j) = distTable(i,0)+distTable(0,j)-distTable(i,j);
+            }
+        }
+    }
+
+}
+
+void cWseq(const Topology& topology){
+
+    size_t i,j,nNodes;
+    cg3::Point2Dd pointI,pointJ;
+    std::vector<Node> nodeList=topology.getNodes();
     nNodes=topology.getNodes().size();
 
     cg3::Array2D<double> distTable = cg3::Array2D<double>(nNodes,nNodes,0.0);
+    computeDistTable(topology.getNodes(),distTable);
+    /*cg3::Array2D<double>(nNodes,nNodes,0.0);*/
     cg3::Array2D<double> saveTable = cg3::Array2D<double>(nNodes,nNodes,0.0);
+    computeSaveTable(distTable, saveTable);
 
+    /*
     //Calcolo della Tabella delle Distanze
     for (i=0;i<nNodes;i++) {
         pointI=topology.getNodes()[i].getCoordinates();
@@ -61,7 +99,7 @@ void cWseq(const Topology& topology){
             }
         }
     }
-
+*/
     //Calcolo della Lista dei Saving
     std::vector<std::array<size_t,2>> saveList;
 
