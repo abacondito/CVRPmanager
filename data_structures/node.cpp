@@ -34,3 +34,13 @@ void Node::setPickup(int value)
 {
     pickup = value;
 }
+
+size_t Node::getIndex() const
+{
+    return index;
+}
+
+void Node::setIndex(const size_t &value)
+{
+    index = value;
+}

@@ -65,48 +65,9 @@ void computeSaveTable(const cg3::Array2D<double>& distTable, cg3::Array2D<double
 
 }
 
-void cWseq(const Topology& topology){
+void computeSaveList(cg3::Array2D<double>& saveTable, std::vector<std::array<size_t,2>> saveList){
 
-    size_t i,j,nNodes;
-    cg3::Point2Dd pointI,pointJ;
-    std::vector<Node> nodeList=topology.getNodes();
-    nNodes=topology.getNodes().size();
-
-    cg3::Array2D<double> distTable = cg3::Array2D<double>(nNodes,nNodes,0.0);
-    computeDistTable(topology.getNodes(),distTable);
-    /*cg3::Array2D<double>(nNodes,nNodes,0.0);*/
-    cg3::Array2D<double> saveTable = cg3::Array2D<double>(nNodes,nNodes,0.0);
-    computeSaveTable(distTable, saveTable);
-
-    /*
-    //Calcolo della Tabella delle Distanze
-    for (i=0;i<nNodes;i++) {
-        pointI=topology.getNodes()[i].getCoordinates();
-
-        for (j=0;j<nNodes;j++) {
-            pointJ=topology.getNodes()[j].getCoordinates();
-           distTable(i,j)=pointI.dist(pointJ);
-        }
-    }
-
-
-
-    //Calcolo della Tabella dei Saving
-    for (i=1;i<nNodes;i++) {
-        for (j=2;j<nNodes;j++) {
-            if((saveTable(j,i)==0.0) && (i!=j)){
-                saveTable(i,j) = distTable(i,0)+distTable(0,j)-distTable(i,j);
-            }
-        }
-    }
-*/
-    //Calcolo della Lista dei Saving
-    std::vector<std::array<size_t,2>> saveList;
-
-
-
-
-    std::array<size_t,2> aux;   
+    std::array<size_t,2> aux;
     aux= getMaxIndexes(saveTable);
 
     while(saveTable(aux[0],aux[1])!=0.0){
@@ -115,15 +76,23 @@ void cWseq(const Topology& topology){
         aux= getMaxIndexes(saveTable);
     }
 
-    /*do{
+}
 
-        aux= getMaxIndexes(saveTable);
-        saveList.push_back(aux);
-        saveTable(aux[0],aux[1])=-1.0;
+void cWseq(const Topology& topology){
 
-    }while(saveTable(aux[0],aux[1])!=0.0);*/
-    
-    
+    size_t nNodes;
+    cg3::Point2Dd pointI,pointJ;
+    std::vector<Node> nodeList=topology.getLinehaulNodes();
+    nNodes=topology.getLinehaulNodes().size();
+
+    cg3::Array2D<double> distTable = cg3::Array2D<double>(nNodes,nNodes,0.0);
+    computeDistTable(topology.getLinehaulNodes(),distTable);
+
+    cg3::Array2D<double> saveTable = cg3::Array2D<double>(nNodes,nNodes,0.0);
+    computeSaveTable(distTable, saveTable);
+
+    std::vector<std::array<size_t,2>> saveList;
+    computeSaveList(saveTable,saveList);
 
     Routes routes;
     std::vector<Node> tmpRoute;

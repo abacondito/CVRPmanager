@@ -16,10 +16,14 @@ public:
     int getPickup() const;
     void setPickup(int value);
 
+    size_t getIndex() const;
+    void setIndex(const size_t &value);
+
 protected:
     cg3::Point2Dd coordinates;
     int delivery = 0;
     int pickup = 0;
+    size_t index;
 };
 
 #endif // NODE_H

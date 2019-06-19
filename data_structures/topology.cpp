@@ -25,10 +25,6 @@ void Topology::setVehicle_num(int value)
     vehicle_num = value;
 }
 
-void Topology::addNode(Node node)
-{
-    this->nodes.push_back(node);
-}
 
 int Topology::getCapacity() const
 {
@@ -40,12 +36,23 @@ void Topology::setCapacity(int value)
     capacity = value;
 }
 
-std::vector<Node> Topology::getNodes() const
+std::vector<Node> Topology::getLinehaulNodes() const
 {
-    return nodes;
+    return linehaulNodes;
 }
 
-void Topology::setNodes(const std::vector<Node> &value)
+void Topology::setLinehaulNodes(const std::vector<Node> &value)
 {
-    nodes = value;
+    linehaulNodes = value;
 }
+
+std::vector<Node> Topology::getBackhaulNodes() const
+{
+    return backhaulNodes;
+}
+
+void Topology::setBackhaulNodes(const std::vector<Node> &value)
+{
+    backhaulNodes = value;
+}
+

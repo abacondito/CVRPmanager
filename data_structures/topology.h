@@ -21,14 +21,19 @@ public:
     int getCapacity() const;
     void setCapacity(int value);
 
-    std::vector<Node> getNodes() const;
-    void setNodes(const std::vector<Node> &value);
+
+    std::vector<Node> getLinehaulNodes() const;
+    void setLinehaulNodes(const std::vector<Node> &value);
+
+    std::vector<Node> getBackhaulNodes() const;
+    void setBackhaulNodes(const std::vector<Node> &value);
 
 protected:
     int vehicle_num=0;
     int node_num=0;
     int capacity=0;
-    std::vector<Node> nodes;
+    std::vector<Node> linehaulNodes;
+    std::vector<Node> backhaulNodes;
 };
 
 #endif // TOPOLOGY_H

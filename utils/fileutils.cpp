@@ -71,15 +71,26 @@ Topology getTopologyFromFile(const std::string& filename) {
     Node start = Node();
     start.setCoordinates(cg3::Point2Dd(x,y));
     topology.setCapacity(cap);
-    topology.addNode(start);
+    topology.getBackhaulNodes().push_back(start);
+    topology.getLinehaulNodes().push_back(start);
 
-    for (int i = 0; i < nNodes; i++) {
+
+    for (size_t i = 0; i < nNodes; i++) {
+
+
         infile >> std::setprecision(10) >> x >> std::setprecision(10) >> y >> delivery >> pickup >> aux;
         Node node = Node();
         node.setCoordinates(cg3::Point2Dd(x,y));
         node.setDelivery(delivery);
         node.setPickup(pickup);
-        topology.addNode(node);
+        node.setIndex(i);
+        if (delivery != 0.0){
+            topology.getLinehaulNodes().push_back(node);
+        }
+        else {
+            topology.getBackhaulNodes().push_back(node);
+        }
+
     }
 
     infile.close();
