@@ -218,6 +218,15 @@ void cWseq(const Topology& topology){
     std::array<size_t,2> nodeCouple;
     bool hasNotFailed;
 
+    /*int usedLinehaulNodes=0;
+    int usableLinehaulLimit=topology.getLinehaulNodes().size()-usedLinehaulNodes;
+    if (usableLinehaulLimit>(topology.getVehicle_num()-i)){
+        //roba normale
+    }
+    else {
+        tmpRoute.push_back(topology.getLinehaulNodes())
+    }*/
+
     for (int i=0;i<topology.getVehicle_num();i++) {
 
         //Richiama la capacità standard di un veicolo
@@ -254,10 +263,27 @@ void cWseq(const Topology& topology){
                            (topology.getBackhaulNodes()[lastNodeAdded],topology.getBackhaulNodes())]);
 
 
+        if(saveListBackhaul.size() > 0){
 
+            //aggiungo alla route i primi due Backhaul con il saving più alto
+            nodeCouple = saveListBackhaul.front();
+            saveListBackhaul.erase(saveListBackhaul.begin());
+            tmpRoute.push_back(topology.getBackhaulNodes()[nodeCouple[0]]);
+            tmpRoute.push_back(topology.getBackhaulNodes()[nodeCouple[1]]);
+        }
 
+        //segnala se il veicolo ha capacità sufficiente a soddisfare il pickup del successore ottimale(saving più alto) nella route
+        hasNotFailed = true;
 
-        
+        while(hasNotFailed){
+            lastNodeAdded = tmpRoute.back().getIndex();
+
+            //prova ad aggiungere il miglior successore e aggiorna hasNotFailed con true se è riuscito o false se ha fallito
+            hasNotFailed = addBestAdjacentNodeByIndex(topology.getBackhaulNodes(),saveListBackhaul,
+                                                      tmpRoute,lastNodeAdded,topology.getCapacity(),
+                                                      current_capacity,false);
+        }
+
     }
 }
 
