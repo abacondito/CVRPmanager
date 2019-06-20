@@ -24,7 +24,7 @@ std::array<size_t,2> getMaxIndexes(cg3::Array2D<double> matrix){
 
 }
 
-size_t findBestBackhaulSuccessorFromLinehaul(Node& linehaul,std::vector<Node>& backhauls){
+size_t findBestBackhaulSuccessorFromLinehaul(Node& linehaul,const std::vector<Node>& backhauls){
 
     size_t maxIndex = 0;
     double maxSaving = 0.0;
@@ -33,7 +33,7 @@ size_t findBestBackhaulSuccessorFromLinehaul(Node& linehaul,std::vector<Node>& b
 
     for (size_t i = 1;i < backhauls.size();i++) {
 
-        Node& currentBackhaul = backhauls[i];
+        Node currentBackhaul = backhauls[i];
         saving=0.0;
         distLinehaulBackhaul = linehaul.getCoordinates().dist(currentBackhaul.getCoordinates());
         distLinehaulFromStart = linehaul.getCoordinates().dist(backhauls[0].getCoordinates());
@@ -220,7 +220,13 @@ void cWseq(const Topology& topology){
 
     for (int i=0;i<topology.getVehicle_num();i++) {
 
+        //Richiama la capacità standard di un veicolo
         current_capacity = topology.getCapacity();
+
+        //Inserimento del magazzino base all'interno della route
+        tmpRoute.push_back(topology.getLinehaulNodes()[0]);
+        //Le righe di sopra vanno inserite in bootRoute()
+
 
         if(saveListLinehaul.size() > 0){
 
@@ -243,9 +249,14 @@ void cWseq(const Topology& topology){
                                                       current_capacity,true);
         }
 
+        //aggiungo il backhaul ottimale dato l'ultimo linehaul aggiunto
+        tmpRoute.push_back(topology.getBackhaulNodes()[findBestBackhaulSuccessorFromLinehaul
+                           (topology.getBackhaulNodes()[lastNodeAdded],topology.getBackhaulNodes())]);
 
 
-        //tmpRoute.push_back(saveList. nodeList[index])
+
+
+
         
     }
 }
