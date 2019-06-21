@@ -7,6 +7,8 @@
 #include <vector>
 #include <data_structures/routes.h>
 #include <list>
+#include <iostream>
+#include <fstream>
 
 std::array<size_t,2> getMaxIndexes(cg3::Array2D<double> matrix);
 

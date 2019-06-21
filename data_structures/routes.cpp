@@ -15,4 +15,8 @@ void Routes::setRoutes(const std::vector<std::vector<Node> > &value)
     routes = value;
 }
 
+void Routes::addRoute(std::vector<Node>& route){
+    this->routes.push_back(route);
+}
+
 

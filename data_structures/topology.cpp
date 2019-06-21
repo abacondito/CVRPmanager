@@ -56,3 +56,11 @@ void Topology::setBackhaulNodes(const std::vector<Node> &value)
     backhaulNodes = value;
 }
 
+void Topology::addLinehaulNode(Node& node){
+    this->linehaulNodes.push_back(node);
+}
+
+void Topology::addBackhaulNode(Node& node){
+    this->backhaulNodes.push_back(node);
+}
+

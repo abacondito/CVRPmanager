@@ -70,9 +70,10 @@ Topology getTopologyFromFile(const std::string& filename) {
     infile >> std::setprecision(10) >> x >> std::setprecision(10) >> y >> aux >> cap;
     Node start = Node();
     start.setCoordinates(cg3::Point2Dd(x,y));
+    start.setIndex(0);
     topology.setCapacity(cap);
-    topology.getBackhaulNodes().push_back(start);
-    topology.getLinehaulNodes().push_back(start);
+    topology.addLinehaulNode(start);
+    topology.addBackhaulNode(start);
 
 
     for (size_t i = 0; i < nNodes; i++) {
@@ -83,12 +84,12 @@ Topology getTopologyFromFile(const std::string& filename) {
         node.setCoordinates(cg3::Point2Dd(x,y));
         node.setDelivery(delivery);
         node.setPickup(pickup);
-        node.setIndex(i);
+        node.setIndex(i+1);
         if (delivery != 0.0){
-            topology.getLinehaulNodes().push_back(node);
+            topology.addLinehaulNode(node);
         }
         else {
-            topology.getBackhaulNodes().push_back(node);
+            topology.addBackhaulNode(node);
         }
 
     }
@@ -97,6 +98,5 @@ Topology getTopologyFromFile(const std::string& filename) {
 
     return topology;
 }
-
 
 }

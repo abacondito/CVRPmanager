@@ -180,6 +180,8 @@ void computeSaveList(cg3::Array2D<double>& saveTable, std::list<std::array<size_
 }
 
 void cWseq(const Topology& topology){
+    int threshold=(topology.getLinehaulNodes().size()-1)/(topology.getVehicle_num());
+    int module = (topology.getLinehaulNodes().size()-1)%(topology.getVehicle_num());
 
     size_t nNodesLinehaul=topology.getLinehaulNodes().size();
 
@@ -237,6 +239,9 @@ void cWseq(const Topology& topology){
         //Le righe di sopra vanno inserite in bootRoute()
 
 
+        int unassignedLinehaulsNodes = topology.getLinehaulNodes().size() -1;
+        int tmpSumThresh = threshold + module;
+
         if(saveListLinehaul.size() > 0){
 
             //aggiungo alla route i primi due Linehaul con il saving più alto
@@ -244,18 +249,28 @@ void cWseq(const Topology& topology){
             saveListLinehaul.erase(saveListLinehaul.begin());
             tmpRoute.push_back(topology.getLinehaulNodes()[nodeCouple[0]]);
             tmpRoute.push_back(topology.getLinehaulNodes()[nodeCouple[1]]);
+            tmpSumThresh -= 2;
+            unassignedLinehaulsNodes -= 2;
         }
 
         //segnala se il veicolo ha capacità sufficiente a soddisfare il delivery del successore ottimale(saving più alto) nella route
         hasNotFailed = true;
 
-        while(hasNotFailed){
+
+        while(hasNotFailed && (tmpSumThresh > 0)){
             lastNodeAdded = tmpRoute.back().getIndex();
 
             //prova ad aggiungere il miglior successore e aggiorna hasNotFailed con true se è riuscito o false se ha fallito
             hasNotFailed = addBestAdjacentNodeByIndex(topology.getLinehaulNodes(),saveListLinehaul,
                                                       tmpRoute,lastNodeAdded,topology.getCapacity(),
                                                       current_capacity,true);
+            if(hasNotFailed){
+                tmpSumThresh -= 1;
+                unassignedLinehaulsNodes -= 1;
+            }
+            else {
+                threshold = unassignedLinehaulsNodes/(topology.getVehicle_num() - i +1);
+            }
         }
 
         //aggiungo il backhaul ottimale dato l'ultimo linehaul aggiunto
@@ -284,6 +299,37 @@ void cWseq(const Topology& topology){
                                                       current_capacity,false);
         }
 
+        routes.addRoute(tmpRoute);
+        tmpRoute.clear();
+    }
+
+    std::ofstream myfile ("TestRoutes.txt");
+
+    for (size_t i = 0;i < routes.getRoutes().size();i++) {
+
+        if (myfile.is_open())
+        {
+            myfile << i << "   ";
+        }
+
+        for (size_t j = 0; j < routes.getRoutes()[i].size();j++) {
+
+            if (myfile.is_open())
+            {
+              Node node = routes.getRoutes()[i][j];
+              myfile << node.getIndex();
+              myfile << "   ";
+            }
+        }
+        if (myfile.is_open())
+        {
+            myfile << "\n";
+        }
+    }
+
+    if (myfile.is_open())
+    {
+        myfile.close();
     }
 }
 
