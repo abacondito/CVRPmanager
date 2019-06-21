@@ -172,7 +172,7 @@ void computeSaveList(cg3::Array2D<double>& saveTable, std::list<std::array<size_
     aux = getMaxIndexes(saveTable);
 
     while(saveTable(aux[0],aux[1])!=0.0){
-        saveList.push_front(aux);
+        saveList.push_back(aux);
         saveTable(aux[0],aux[1])=0.0;
         aux = getMaxIndexes(saveTable);
     }
@@ -249,6 +249,7 @@ void cWseq(const Topology& topology){
             saveListLinehaul.erase(saveListLinehaul.begin());
             tmpRoute.push_back(topology.getLinehaulNodes()[nodeCouple[0]]);
             tmpRoute.push_back(topology.getLinehaulNodes()[nodeCouple[1]]);
+            eraseFromSaveListByItem(saveListLinehaul,nodeCouple[0]);
             tmpSumThresh -= 2;
             unassignedLinehaulsNodes -= 2;
         }
@@ -269,6 +270,7 @@ void cWseq(const Topology& topology){
                 unassignedLinehaulsNodes -= 1;
             }
             else {
+                eraseFromSaveListByItem(saveListLinehaul,tmpRoute.back().getIndex());
                 threshold = unassignedLinehaulsNodes/(topology.getVehicle_num() - i +1);
             }
         }
@@ -285,6 +287,7 @@ void cWseq(const Topology& topology){
             saveListBackhaul.erase(saveListBackhaul.begin());
             tmpRoute.push_back(topology.getBackhaulNodes()[nodeCouple[0]]);
             tmpRoute.push_back(topology.getBackhaulNodes()[nodeCouple[1]]);
+            eraseFromSaveListByItem(saveListBackhaul,nodeCouple[0]);
         }
 
         //segnala se il veicolo ha capacità sufficiente a soddisfare il pickup del successore ottimale(saving più alto) nella route
@@ -297,6 +300,10 @@ void cWseq(const Topology& topology){
             hasNotFailed = addBestAdjacentNodeByIndex(topology.getBackhaulNodes(),saveListBackhaul,
                                                       tmpRoute,lastNodeAdded,topology.getCapacity(),
                                                       current_capacity,false);
+
+            if(!hasNotFailed){
+                eraseFromSaveListByItem(saveListBackhaul,tmpRoute.back().getIndex());
+            }
         }
 
         routes.addRoute(tmpRoute);
