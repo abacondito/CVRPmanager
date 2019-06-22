@@ -1,8 +1,9 @@
 #include "route.h"
 
-Route::Route()
+Route::Route(double max_capacity)
 {
-
+    this->max_capacity = max_capacity;
+    this->current_capacity = max_capacity;
 }
 
 bool Route::addLinehaul(Node& linehaul){

@@ -26,12 +26,12 @@ void Topology::setVehicle_num(int value)
 }
 
 
-int Topology::getCapacity() const
+double Topology::getCapacity() const
 {
     return capacity;
 }
 
-void Topology::setCapacity(int value)
+void Topology::setCapacity(double value)
 {
     capacity = value;
 }

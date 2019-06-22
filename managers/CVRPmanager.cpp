@@ -18,7 +18,8 @@
 //Limits for the bounding box
 //It defines where points can be added
 //Do not change the following line
-#define BOUNDINGBOX 1e+6
+//#define BOUNDINGBOX 1e+6
+#define BOUNDINGBOX 1e+5
 
 
 //Coordinates of the bounding triangle.
@@ -54,7 +55,7 @@ CVRPmanager::CVRPmanager(QWidget *parent) :
     ui(new Ui::CVRPmanager),
     mainWindow(static_cast<cg3::viewer::MainWindow&>(*parent)),
     boundingBox(cg3::Point2Dd(-BOUNDINGBOX, -BOUNDINGBOX),
-                cg3::Point2Dd(BOUNDINGBOX, BOUNDINGBOX))    
+                cg3::Point2Dd(BOUNDINGBOX, BOUNDINGBOX)),routes(SCENECENTER,SCENERADIUS)
 {
     //UI setup
     ui->setupUi(this);
@@ -66,7 +67,8 @@ CVRPmanager::CVRPmanager(QWidget *parent) :
 
     //Add the drawable object to the mainWindow.
     //The mainWindow will take care of rendering the bounding box
-    mainWindow.pushObj(&boundingBox, "Bounding box");
+    //mainWindow.pushObj(&boundingBox, "Bounding box");
+    mainWindow.pushObj(&routes, "Routes");
 
     //This updates the canvas (call it whenever you change or
     //add some drawable object)
@@ -117,11 +119,11 @@ CVRPmanager::~CVRPmanager() {
     /********************************************************************************************************************/
 
     /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
-
+    mainWindow.deleteObj(&routes);
     /********************************************************************************************************************/
 
     //Delete the bounding box drawable object
-    mainWindow.deleteObj(&boundingBox);
+    //mainWindow.deleteObj(&boundingBox);
 
     delete ui; //Delete interface
 }
@@ -361,7 +363,7 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
 
         //Launch the algorithm on the current vector of points and measure
         //its efficiency with a timer
-        cWseq(topology);
+        cWseq(topology,routes);
         launchAlgorithmAndMeasureTime();
 
         //Draw Delaunay Triangulation

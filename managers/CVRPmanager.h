@@ -7,6 +7,8 @@
 
 #include <cg3/viewer/drawable_objects/2d/drawable_bounding_box2d.h>
 
+#include <drawable_objects/drawable_routes.h>
+
 
 namespace Ui {
     class CVRPmanager;
@@ -40,7 +42,7 @@ private:
 
     //Declare your private attributes here
     /********************************************************************************************************************/
-
+    Drawable_routes routes;
     /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
 
     /********************************************************************************************************************/

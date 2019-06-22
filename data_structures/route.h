@@ -8,7 +8,7 @@
 class Route
 {
 public:
-    Route();
+    Route(double max_capacity);
     bool addLinehaul(Node& linehaul);
     bool addBackhaul(Node& backhaul);
     void addStartingPoint(Node& startingPoint);

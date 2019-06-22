@@ -1,5 +1,39 @@
 #include "cvrp.h"
 
+
+void writeOnFile(Routes& routes){
+
+    std::ofstream myfile ("TestRoutes.txt");
+
+    for (size_t i = 0;i < routes.getRoutes().size();i++) {
+
+        if (myfile.is_open())
+        {
+            myfile << i << "   ";
+        }
+
+        for (size_t j = 0; j < routes.getRoutes()[i].getRouteSize();j++) {
+
+            if (myfile.is_open())
+            {
+              Node node = routes.getRoutes()[i].getNodeByIndex(j);
+              myfile << node.getIndex();
+              myfile << "   ";
+            }
+        }
+        if (myfile.is_open())
+        {
+            myfile << "\n";
+        }
+    }
+
+    if (myfile.is_open())
+    {
+        myfile.close();
+    }
+}
+
+
 //Ottiene il massimo da un array2D e i rispettivi indici
 std::array<size_t,2> getMaxIndexes(cg3::Array2D<double> matrix){
 
@@ -54,24 +88,6 @@ size_t findBestBackhaulSuccessorFromLinehaul(Node& linehaul,const std::vector<No
 
         it++;
     }
-
-
-
-    /*for (size_t i = 1;i < backhauls.size();i++) {
-
-        Node currentBackhaul = backhauls[i];
-        saving=0.0;
-        distLinehaulBackhaul = linehaul.getCoordinates().dist(currentBackhaul.getCoordinates());
-        distLinehaulFromStart = linehaul.getCoordinates().dist(backhauls[0].getCoordinates());
-        distBackhaulFromStart = currentBackhaul.getCoordinates().dist(backhauls[0].getCoordinates());
-
-        saving = distBackhaulFromStart + distLinehaulFromStart - distLinehaulBackhaul;
-
-        if(saving > maxSaving){
-            maxSaving = saving;
-            maxIndex = i;
-        }
-    }*/
 
     return maxIndex;
 }
@@ -193,7 +209,7 @@ void computeSaveList(cg3::Array2D<double>& saveTable, std::list<std::array<size_
 
 }
 
-void cWseq(const Topology& topology){
+void cWseq(const Topology& topology,Routes& routes){
     int threshold=(topology.getLinehaulNodes().size()-1)/(topology.getVehicle_num());
     int module = (topology.getLinehaulNodes().size()-1)%(topology.getVehicle_num());
 
@@ -227,28 +243,20 @@ void cWseq(const Topology& topology){
     computeSaveList(saveTableBackhaul,saveListBackhaul);
 
     //Processo del passo base
-    Routes routes;
-    Route tmpRoute;
+    Route tmpRoute = Route(topology.getCapacity());
     size_t lastNodeAdded;
     std::array<size_t,2> nodeCouple;
     bool hasNotFailed;
 
-    /*int usedLinehaulNodes=0;
-    int usableLinehaulLimit=topology.getLinehaulNodes().size()-usedLinehaulNodes;
-    if (usableLinehaulLimit>(topology.getVehicle_num()-i)){
-        //roba normale
-    }
-    else {
-        tmpRoute.push_back(topology.getLinehaulNodes())
-    }*/
+    int unassignedLinehaulsNodes = topology.getLinehaulNodes().size() -1;
+
 
     for (int i=0;i<topology.getVehicle_num();i++) {
 
-        tmpRoute = Route();
+        int tmpThresh = threshold;
+        int tmpModuleThresh = module;
 
-        tmpRoute.setMax_capacity(topology.getCapacity());
-
-        tmpRoute.setCurrent_capacity(topology.getCapacity());
+        tmpRoute = Route(topology.getCapacity());
 
         //Richiama la capacità standard di un veicolo
 
@@ -256,9 +264,6 @@ void cWseq(const Topology& topology){
         tmpRoute.addStartingPoint(topology.getLinehaulNodes()[0]);
         //Le righe di sopra vanno inserite in bootRoute()
 
-
-        int unassignedLinehaulsNodes = topology.getLinehaulNodes().size() -1;
-        int tmpSumThresh = threshold + module;
 
         if(saveListLinehaul.size() > 0){
 
@@ -268,7 +273,7 @@ void cWseq(const Topology& topology){
             tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[0]]);
             tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[1]]);
             eraseFromSaveListByItem(saveListLinehaul,nodeCouple[0]);
-            tmpSumThresh -= 2;
+            tmpThresh -= 2;
             unassignedLinehaulsNodes -= 2;
         }
 
@@ -276,18 +281,29 @@ void cWseq(const Topology& topology){
         hasNotFailed = true;
 
 
-        while(hasNotFailed && (tmpSumThresh > 0) && (saveListLinehaul.size() > 0)){
+        while(hasNotFailed && (tmpThresh > 0) && (tmpModuleThresh > 0) && (saveListLinehaul.size() > 0)){
             lastNodeAdded = tmpRoute.getLastNode().getIndex();
 
             //prova ad aggiungere il miglior successore e aggiorna hasNotFailed con true se è riuscito o false se ha fallito
             hasNotFailed = addBestAdjacentNodeByIndex(topology.getLinehaulNodes(),saveListLinehaul,
                                                       tmpRoute,lastNodeAdded,true);
             if(hasNotFailed){
-                tmpSumThresh -= 1;
+
+                if(tmpThresh > 0){
+                    tmpThresh -= 1;
+                }
+                else {
+                    tmpModuleThresh -=1;
+                }
+
                 unassignedLinehaulsNodes -= 1;
             }
-            else {                
-                threshold = unassignedLinehaulsNodes/(topology.getVehicle_num() - i +1);
+            else {
+
+                if(tmpThresh > 0){
+                    threshold = unassignedLinehaulsNodes/(topology.getVehicle_num() - i +1);
+                    module = unassignedLinehaulsNodes/(topology.getVehicle_num() - i +1);
+                }
             }
         }
 
@@ -320,34 +336,8 @@ void cWseq(const Topology& topology){
         routes.addRoute(tmpRoute);
     }
 
-    std::ofstream myfile ("TestRoutes.txt");
+    writeOnFile(routes);
 
-    for (size_t i = 0;i < routes.getRoutes().size();i++) {
-
-        if (myfile.is_open())
-        {
-            myfile << i << "   ";
-        }
-
-        for (size_t j = 0; j < routes.getRoutes()[i].getRouteSize();j++) {
-
-            if (myfile.is_open())
-            {
-              Node node = routes.getRoutes()[i].getNodeByIndex(j);
-              myfile << node.getIndex();
-              myfile << "   ";
-            }
-        }
-        if (myfile.is_open())
-        {
-            myfile << "\n";
-        }
-    }
-
-    if (myfile.is_open())
-    {
-        myfile.close();
-    }
 }
 
 

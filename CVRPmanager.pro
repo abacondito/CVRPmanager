@@ -46,6 +46,7 @@ SOURCES += \
     data_structures/route.cpp \
     data_structures/routes.cpp \
     data_structures/topology.cpp \
+    drawable_objects/drawable_routes.cpp \
     main.cpp \
     managers/CVRPmanager.cpp \
     utils/fileutils.cpp
@@ -59,6 +60,7 @@ HEADERS += \
     data_structures/route.h \
     data_structures/routes.h \
     data_structures/topology.h \
+    drawable_objects/drawable_routes.h \
     managers/CVRPmanager.h \
     utils/fileutils.h
 

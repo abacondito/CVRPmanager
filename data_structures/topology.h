@@ -16,8 +16,8 @@ public:
     int getVehicle_num() const;
     void setVehicle_num(int value);
 
-    int getCapacity() const;
-    void setCapacity(int value);
+    double getCapacity() const;
+    void setCapacity(double value);
 
 
     std::vector<Node> getLinehaulNodes() const;
@@ -34,7 +34,7 @@ public:
 protected:
     int vehicle_num=0;
     int node_num=0;
-    int capacity=0;
+    double capacity=0;
     std::vector<Node> linehaulNodes;
     std::vector<Node> backhaulNodes;
 };

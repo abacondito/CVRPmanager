@@ -19,7 +19,7 @@ void computeDistTable(const std::vector<Node>& nodes, cg3::Array2D<double>& tabl
 void computeSaveTable(const cg3::Array2D<double>& distTable, cg3::Array2D<double>& saveTable);
 void computeSaveList(cg3::Array2D<double>& saveTable, std::list<std::array<size_t,2>>& saveList);
 
-void cWseq(const Topology& topology);
+void cWseq(const Topology& topology,Routes& routes);
 void cWpar(const Topology& topology);
 
 
