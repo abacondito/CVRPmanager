@@ -12,8 +12,8 @@ public:
     bool addLinehaul(Node& linehaul);
     bool addBackhaul(Node& backhaul);
     void addStartingPoint(Node& startingPoint);
-    Node getLastNode();
-    Node getNodeByIndex(size_t index);
+    Node& getLastNode();
+    Node& getNodeByIndex(size_t index);
     size_t getRouteSize();
 
 

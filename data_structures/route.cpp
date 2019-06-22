@@ -35,11 +35,11 @@ void Route::addStartingPoint(Node& startingPoint){
     this->nodes.push_back(startingPoint);
 }
 
-Node Route::getLastNode(){
-    this->nodes.back();
+Node& Route::getLastNode(){
+    this->nodes[nodes.size()-1];
 }
 
-Node Route::getNodeByIndex(size_t index){
+Node& Route::getNodeByIndex(size_t index){
     return  this->nodes[index];
 }
 size_t Route::getRouteSize(){

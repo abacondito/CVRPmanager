@@ -24,14 +24,40 @@ std::array<size_t,2> getMaxIndexes(cg3::Array2D<double> matrix){
 
 }
 
-size_t findBestBackhaulSuccessorFromLinehaul(Node& linehaul,const std::vector<Node>& backhauls){
+size_t findBestBackhaulSuccessorFromLinehaul(Node& linehaul,const std::vector<Node>& backhauls,std::list<std::array<size_t,2>>& saveBackhaulList){
 
     size_t maxIndex = 0;
     double maxSaving = 0.0;
     double saving = 0.0;
     double distLinehaulBackhaul, distLinehaulFromStart, distBackhaulFromStart;
 
-    for (size_t i = 1;i < backhauls.size();i++) {
+    std::list<std::array<size_t,2>>::iterator it = saveBackhaulList.begin();
+
+    while(it != saveBackhaulList.end()){
+
+        for (size_t i=0;i<2;i++) {
+            size_t index = (*it)[i];
+
+            Node currentBackhaul = backhauls[index];
+            saving=0.0;
+            distLinehaulBackhaul = linehaul.getCoordinates().dist(currentBackhaul.getCoordinates());
+            distLinehaulFromStart = linehaul.getCoordinates().dist(backhauls[0].getCoordinates());
+            distBackhaulFromStart = currentBackhaul.getCoordinates().dist(backhauls[0].getCoordinates());
+
+            saving = distBackhaulFromStart + distLinehaulFromStart - distLinehaulBackhaul;
+
+            if(saving > maxSaving){
+                maxSaving = saving;
+                maxIndex = index;
+            }
+        }
+
+        it++;
+    }
+
+
+
+    /*for (size_t i = 1;i < backhauls.size();i++) {
 
         Node currentBackhaul = backhauls[i];
         saving=0.0;
@@ -45,7 +71,7 @@ size_t findBestBackhaulSuccessorFromLinehaul(Node& linehaul,const std::vector<No
             maxSaving = saving;
             maxIndex = i;
         }
-    }
+    }*/
 
     return maxIndex;
 }
@@ -67,7 +93,7 @@ void eraseFromSaveListByItem(std::list<std::array<size_t,2>>& saveList,size_t in
 //data una savingList e un indice aggiunge alla route il successore con il saving più alto(se esistente),elimina le coppie che includono il predecessore e
 //restituisce true se va a buon fine o false viceversa
 
-bool addBestAdjacentNodeByIndex(const std::vector<Node> nodeList,std::list<std::array<size_t,2>>& saveList,
+bool addBestAdjacentNodeByIndex(const std::vector<Node>& nodeList,std::list<std::array<size_t,2>>& saveList,
                                 Route& route, const size_t index,const bool lineHaulOrBackhaul){
 
 
@@ -265,26 +291,16 @@ void cWseq(const Topology& topology){
             }
         }
 
+        lastNodeAdded = tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
 
         //aggiungo il backhaul ottimale dato l'ultimo linehaul aggiunto
         size_t best = findBestBackhaulSuccessorFromLinehaul
-                (topology.getLinehaulNodes()[lastNodeAdded],topology.getBackhaulNodes());
+                (topology.getLinehaulNodes()[lastNodeAdded],topology.getBackhaulNodes(),saveListBackhaul);
         if(best != 0){
             tmpRoute.addBackhaul(topology.getBackhaulNodes()[best]);
         }
 
         eraseFromSaveListByItem(saveListLinehaul, lastNodeAdded);
-
-
-        /*if(saveListBackhaul.size() > 0){
-
-            //aggiungo alla route i primi due Backhaul con il saving più alto
-            nodeCouple = saveListBackhaul.front();
-            saveListBackhaul.erase(saveListBackhaul.begin());
-            tmpRoute.push_back(topology.getBackhaulNodes()[nodeCouple[0]]);
-            tmpRoute.push_back(topology.getBackhaulNodes()[nodeCouple[1]]);
-            eraseFromSaveListByItem(saveListBackhaul,nodeCouple[0]);
-        }*/
 
         //segnala se il veicolo ha capacità sufficiente a soddisfare il pickup del successore ottimale(saving più alto) nella route
         hasNotFailed = true;
