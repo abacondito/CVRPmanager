@@ -43,6 +43,7 @@ DISTFILES += \
 SOURCES += \
     algorithms/cvrp.cpp \
     data_structures/node.cpp \
+    data_structures/route.cpp \
     data_structures/routes.cpp \
     data_structures/topology.cpp \
     main.cpp \
@@ -55,6 +56,7 @@ FORMS += \
 HEADERS += \
     algorithms/cvrp.h \
     data_structures/node.h \
+    data_structures/route.h \
     data_structures/routes.h \
     data_structures/topology.h \
     managers/CVRPmanager.h \

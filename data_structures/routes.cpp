@@ -5,17 +5,17 @@ Routes::Routes()
 
 }
 
-std::vector<std::vector<Node> > Routes::getRoutes() const
+std::vector<Route> Routes::getRoutes() const
 {
     return routes;
 }
 
-void Routes::setRoutes(const std::vector<std::vector<Node> > &value)
+void Routes::setRoutes(const std::vector<Route> &value)
 {
     routes = value;
 }
 
-void Routes::addRoute(std::vector<Node>& route){
+void Routes::addRoute(Route& route){
     this->routes.push_back(route);
 }
 

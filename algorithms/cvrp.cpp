@@ -68,8 +68,7 @@ void eraseFromSaveListByItem(std::list<std::array<size_t,2>>& saveList,size_t in
 //restituisce true se va a buon fine o false viceversa
 
 bool addBestAdjacentNodeByIndex(const std::vector<Node> nodeList,std::list<std::array<size_t,2>>& saveList,
-                                std::vector<Node>& route, const size_t index,
-                                const double& max_capacity,double& current_capacity,const bool lineHaulOrBackhaul){
+                                Route& route, const size_t index,const bool lineHaulOrBackhaul){
 
 
     std::list<std::array<size_t,2>>::iterator it = saveList.begin();
@@ -89,35 +88,24 @@ bool addBestAdjacentNodeByIndex(const std::vector<Node> nodeList,std::list<std::
             otherNode = nodeList[candidateIndex];
             if(lineHaulOrBackhaul){
                 //per i Linehaul
-                if(otherNode.getDelivery() > current_capacity){
-                    //se no restituisco fallimento
-                    return false;
-                }
-                else {
-                    //se si:
-                    //elimino tutte le coppie che includono il predecessore
+                if(route.addLinehaul(otherNode)){
                     eraseFromSaveListByItem(saveList,index);
-                    //aggiungo il successore alla route
-                    current_capacity -= otherNode.getDelivery();
-                    route.push_back(otherNode);
+                    //se si restituisco true
                     return true;
                 }
+
+                return false;
+
             }
             else {
                 //per i Backhaul
-                if(otherNode.getPickup() > max_capacity - current_capacity){
-                    //se no restituisco fallimento
-                    return false;
-                }
-                else {
-                    //se si:
-                    //elimino tutte le coppie che includono il predecessore
+                if(route.addBackhaul(otherNode)){
                     eraseFromSaveListByItem(saveList,index);
-                    //aggiungo il successore alla route
-                    current_capacity -= otherNode.getPickup();
-                    route.push_back(otherNode);
+                    //se si restituisco true
                     return true;
                 }
+
+                return false;
             }
         }
 
@@ -157,7 +145,7 @@ void computeSaveTable(const cg3::Array2D<double>& distTable, cg3::Array2D<double
     size_t nNodes = distTable.getSizeX();
 
     for (i=1;i<nNodes;i++) {
-        for (j=2;j<nNodes;j++) {
+        for (j=1;j<nNodes;j++) {
             if((saveTable(j,i)==0.0) && (i!=j)){
                 saveTable(i,j) = distTable(i,0)+distTable(0,j)-distTable(i,j);
             }
@@ -214,9 +202,8 @@ void cWseq(const Topology& topology){
 
     //Processo del passo base
     Routes routes;
-    std::vector<Node> tmpRoute;
+    Route tmpRoute;
     size_t lastNodeAdded;
-    double current_capacity;
     std::array<size_t,2> nodeCouple;
     bool hasNotFailed;
 
@@ -231,11 +218,16 @@ void cWseq(const Topology& topology){
 
     for (int i=0;i<topology.getVehicle_num();i++) {
 
+        tmpRoute = Route();
+
+        tmpRoute.setMax_capacity(topology.getCapacity());
+
+        tmpRoute.setCurrent_capacity(topology.getCapacity());
+
         //Richiama la capacità standard di un veicolo
-        current_capacity = topology.getCapacity();
 
         //Inserimento del magazzino base all'interno della route
-        tmpRoute.push_back(topology.getLinehaulNodes()[0]);
+        tmpRoute.addStartingPoint(topology.getLinehaulNodes()[0]);
         //Le righe di sopra vanno inserite in bootRoute()
 
 
@@ -247,8 +239,8 @@ void cWseq(const Topology& topology){
             //aggiungo alla route i primi due Linehaul con il saving più alto
             nodeCouple = saveListLinehaul.front();
             saveListLinehaul.erase(saveListLinehaul.begin());
-            tmpRoute.push_back(topology.getLinehaulNodes()[nodeCouple[0]]);
-            tmpRoute.push_back(topology.getLinehaulNodes()[nodeCouple[1]]);
+            tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[0]]);
+            tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[1]]);
             eraseFromSaveListByItem(saveListLinehaul,nodeCouple[0]);
             tmpSumThresh -= 2;
             unassignedLinehaulsNodes -= 2;
@@ -258,29 +250,33 @@ void cWseq(const Topology& topology){
         hasNotFailed = true;
 
 
-        while(hasNotFailed && (tmpSumThresh > 0)){
-            lastNodeAdded = tmpRoute.back().getIndex();
+        while(hasNotFailed && (tmpSumThresh > 0) && (saveListLinehaul.size() > 0)){
+            lastNodeAdded = tmpRoute.getLastNode().getIndex();
 
             //prova ad aggiungere il miglior successore e aggiorna hasNotFailed con true se è riuscito o false se ha fallito
             hasNotFailed = addBestAdjacentNodeByIndex(topology.getLinehaulNodes(),saveListLinehaul,
-                                                      tmpRoute,lastNodeAdded,topology.getCapacity(),
-                                                      current_capacity,true);
+                                                      tmpRoute,lastNodeAdded,true);
             if(hasNotFailed){
                 tmpSumThresh -= 1;
                 unassignedLinehaulsNodes -= 1;
             }
-            else {
-                eraseFromSaveListByItem(saveListLinehaul,tmpRoute.back().getIndex());
+            else {                
                 threshold = unassignedLinehaulsNodes/(topology.getVehicle_num() - i +1);
             }
         }
 
+
         //aggiungo il backhaul ottimale dato l'ultimo linehaul aggiunto
-        tmpRoute.push_back(topology.getBackhaulNodes()[findBestBackhaulSuccessorFromLinehaul
-                           (topology.getBackhaulNodes()[lastNodeAdded],topology.getBackhaulNodes())]);
+        size_t best = findBestBackhaulSuccessorFromLinehaul
+                (topology.getLinehaulNodes()[lastNodeAdded],topology.getBackhaulNodes());
+        if(best != 0){
+            tmpRoute.addBackhaul(topology.getBackhaulNodes()[best]);
+        }
+
+        eraseFromSaveListByItem(saveListLinehaul, lastNodeAdded);
 
 
-        if(saveListBackhaul.size() > 0){
+        /*if(saveListBackhaul.size() > 0){
 
             //aggiungo alla route i primi due Backhaul con il saving più alto
             nodeCouple = saveListBackhaul.front();
@@ -288,26 +284,24 @@ void cWseq(const Topology& topology){
             tmpRoute.push_back(topology.getBackhaulNodes()[nodeCouple[0]]);
             tmpRoute.push_back(topology.getBackhaulNodes()[nodeCouple[1]]);
             eraseFromSaveListByItem(saveListBackhaul,nodeCouple[0]);
-        }
+        }*/
 
         //segnala se il veicolo ha capacità sufficiente a soddisfare il pickup del successore ottimale(saving più alto) nella route
         hasNotFailed = true;
 
-        while(hasNotFailed){
-            lastNodeAdded = tmpRoute.back().getIndex();
+        while(hasNotFailed && (saveListBackhaul.size() > 0)){
+            lastNodeAdded = tmpRoute.getLastNode().getIndex();
 
             //prova ad aggiungere il miglior successore e aggiorna hasNotFailed con true se è riuscito o false se ha fallito
             hasNotFailed = addBestAdjacentNodeByIndex(topology.getBackhaulNodes(),saveListBackhaul,
-                                                      tmpRoute,lastNodeAdded,topology.getCapacity(),
-                                                      current_capacity,false);
+                                                      tmpRoute,lastNodeAdded,false);
 
             if(!hasNotFailed){
-                eraseFromSaveListByItem(saveListBackhaul,tmpRoute.back().getIndex());
+                eraseFromSaveListByItem(saveListBackhaul,tmpRoute.getLastNode().getIndex());
             }
         }
 
         routes.addRoute(tmpRoute);
-        tmpRoute.clear();
     }
 
     std::ofstream myfile ("TestRoutes.txt");
@@ -319,11 +313,11 @@ void cWseq(const Topology& topology){
             myfile << i << "   ";
         }
 
-        for (size_t j = 0; j < routes.getRoutes()[i].size();j++) {
+        for (size_t j = 0; j < routes.getRoutes()[i].getRouteSize();j++) {
 
             if (myfile.is_open())
             {
-              Node node = routes.getRoutes()[i][j];
+              Node node = routes.getRoutes()[i].getNodeByIndex(j);
               myfile << node.getIndex();
               myfile << "   ";
             }

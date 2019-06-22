@@ -4,6 +4,7 @@
 #include <array>
 #include <vector>
 #include <data_structures/node.h>
+#include <data_structures/route.h>
 
 
 class Routes
@@ -11,12 +12,12 @@ class Routes
 public:
     Routes();
 
-    std::vector<std::vector<Node> > getRoutes() const;
-    void setRoutes(const std::vector<std::vector<Node> > &value);
-    void addRoute(std::vector<Node>& route);
+    std::vector<Route> getRoutes() const;
+    void setRoutes(const std::vector<Route> &value);
+    void addRoute(Route& route);
 
 protected:
-    std::vector<std::vector<Node>> routes;
+    std::vector<Route> routes;
 };
 
 #endif // ROUTES_H
