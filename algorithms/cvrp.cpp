@@ -250,6 +250,10 @@ void cWseq(const Topology& topology,Routes& routes){
 
     int unassignedLinehaulsNodes = topology.getLinehaulNodes().size() -1;
 
+    size_t nodeLeftBehindL = 0;
+    size_t nodeLeftBehindB = 0;
+
+
 
     for (int i=0;i<topology.getVehicle_num();i++) {
 
@@ -281,13 +285,26 @@ void cWseq(const Topology& topology,Routes& routes){
         hasNotFailed = true;
 
 
-        while(hasNotFailed && (tmpThresh > 0) && (tmpModuleThresh > 0) && (saveListLinehaul.size() > 0)){
+        while(hasNotFailed && (tmpThresh > 0 || tmpModuleThresh > 0) && (saveListLinehaul.size() > 0 || nodeLeftBehindL != 0)){
             lastNodeAdded = tmpRoute.getLastNode().getIndex();
 
             //prova ad aggiungere il miglior successore e aggiorna hasNotFailed con true se è riuscito o false se ha fallito
-            hasNotFailed = addBestAdjacentNodeByIndex(topology.getLinehaulNodes(),saveListLinehaul,
-                                                      tmpRoute,lastNodeAdded,true);
+            if(nodeLeftBehindL != 0){
+                if(tmpRoute.addLinehaul(topology.getBackhaulNodes()[nodeLeftBehindL])){
+                    nodeLeftBehindL = 0;
+                }
+            }
+            else {
+                hasNotFailed = addBestAdjacentNodeByIndex(topology.getLinehaulNodes(),saveListLinehaul,
+                                                       tmpRoute,lastNodeAdded,true);
+            }
+
             if(hasNotFailed){
+
+                if(saveListLinehaul.size() == 1){
+                    nodeLeftBehindL = saveListLinehaul.front()[1];
+                    saveListLinehaul.erase(saveListLinehaul.begin());
+                }
 
                 if(tmpThresh > 0){
                     tmpThresh -= 1;
@@ -321,14 +338,32 @@ void cWseq(const Topology& topology,Routes& routes){
         //segnala se il veicolo ha capacità sufficiente a soddisfare il pickup del successore ottimale(saving più alto) nella route
         hasNotFailed = true;
 
-        while(hasNotFailed && (saveListBackhaul.size() > 0)){
+        while(hasNotFailed && (saveListBackhaul.size() > 0 || nodeLeftBehindB != 0)){
             lastNodeAdded = tmpRoute.getLastNode().getIndex();
 
-            //prova ad aggiungere il miglior successore e aggiorna hasNotFailed con true se è riuscito o false se ha fallito
-            hasNotFailed = addBestAdjacentNodeByIndex(topology.getBackhaulNodes(),saveListBackhaul,
-                                                      tmpRoute,lastNodeAdded,false);
+            if(nodeLeftBehindB != 0){
+                if(tmpRoute.addBackhaul(topology.getBackhaulNodes()[nodeLeftBehindB])){
+                    nodeLeftBehindB = 0;
+                }
+                else {
+                    hasNotFailed = false;
+                }
+            }
+            else {
+                //prova ad aggiungere il miglior successore e aggiorna hasNotFailed con true se è riuscito o false se ha fallito
+                hasNotFailed = addBestAdjacentNodeByIndex(topology.getBackhaulNodes(),saveListBackhaul,
+                                                          tmpRoute,lastNodeAdded,false);
+            }
 
-            if(!hasNotFailed){
+
+            if(hasNotFailed){
+
+                if(saveListBackhaul.size() == 1){
+                    nodeLeftBehindB = saveListBackhaul.front()[1];
+                    saveListBackhaul.erase(saveListBackhaul.begin());
+                }
+            }
+            else {
                 eraseFromSaveListByItem(saveListBackhaul,tmpRoute.getLastNode().getIndex());
             }
         }
