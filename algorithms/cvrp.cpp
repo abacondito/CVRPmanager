@@ -5,11 +5,17 @@ void writeOnFile(Routes& routes){
 
     std::ofstream myfile ("TestRoutes.txt");
 
+    std::vector<int> allNodes;
+
+    double totCost = 0.0;
+
     for (size_t i = 0;i < routes.getRoutes().size();i++) {
 
         if (myfile.is_open())
         {
-            myfile << i << "   ";
+            //myfile << i << "   ";
+            myfile << "Max cost:" << routes.getRoutes()[i].getTotCost() << "   ";
+            totCost += routes.getRoutes()[i].getTotCost();
         }
 
         for (size_t j = 0; j < routes.getRoutes()[i].getRouteSize();j++) {
@@ -17,6 +23,9 @@ void writeOnFile(Routes& routes){
             if (myfile.is_open())
             {
               Node node = routes.getRoutes()[i].getNodeByIndex(j);
+              if(node.getIndex() != 0){
+                  allNodes.push_back(node.getIndex());
+              }
               myfile << node.getIndex();
               myfile << "   ";
             }
@@ -29,6 +38,19 @@ void writeOnFile(Routes& routes){
 
     if (myfile.is_open())
     {
+        myfile << "\n" << "All nodes:\n";
+    }
+
+    std::sort(allNodes.begin(),allNodes.end());
+
+    for (size_t i = 0;i < allNodes.size();i++) {
+        myfile << allNodes[i];
+        myfile << "   ";
+    }
+
+    if (myfile.is_open())
+    {
+        myfile << "\n" << "\n" << "Tot Cost :" << totCost;
         myfile.close();
     }
 }
@@ -290,7 +312,7 @@ void cWseq(const Topology& topology,Routes& routes){
 
             //prova ad aggiungere il miglior successore e aggiorna hasNotFailed con true se è riuscito o false se ha fallito
             if(nodeLeftBehindL != 0){
-                if(tmpRoute.addLinehaul(topology.getBackhaulNodes()[nodeLeftBehindL])){
+                if(tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeLeftBehindL])){
                     nodeLeftBehindL = 0;
                 }
             }
@@ -378,6 +400,8 @@ void cWseq(const Topology& topology,Routes& routes){
                 eraseFromSaveListByItem(saveListBackhaul,tmpRoute.getLastNode().getIndex());
             }
         }
+
+        tmpRoute.addLinehaul(topology.getLinehaulNodes()[0]);
 
         routes.addRoute(tmpRoute);
     }

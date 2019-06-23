@@ -23,6 +23,8 @@ public:
     double getCurrent_capacity() const;
     void setCurrent_capacity(double value);
 
+    double getTotCost() const;
+
 protected:
     double totCost = 0.0;
     double max_capacity;

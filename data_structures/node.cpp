@@ -7,7 +7,7 @@ Node::Node()
 
 cg3::Point2Dd Node::getCoordinates() const
 {
-    return coordinates;
+    return this->coordinates;
 }
 
 void Node::setCoordinates(const cg3::Point2Dd &value)

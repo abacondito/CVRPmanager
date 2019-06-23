@@ -8,7 +8,10 @@ Route::Route(double max_capacity)
 
 bool Route::addLinehaul(Node& linehaul){
     if(this->current_capacity >= linehaul.getDelivery()){
-        if(this->nodes.size()>1){
+        if(this->nodes.size()>0){
+            cg3::Point2Dd last = this->nodes.back().getCoordinates();
+            cg3::Point2Dd current = linehaul.getCoordinates();
+            double dist = last.dist(current);
             totCost += this->nodes.back().getCoordinates().dist(linehaul.getCoordinates());
         }
         this->current_capacity -= linehaul.getDelivery();
@@ -21,7 +24,7 @@ bool Route::addLinehaul(Node& linehaul){
 
 bool Route::addBackhaul(Node& backhaul){
     if((this->max_capacity - this->current_capacity) >= backhaul.getPickup()){
-        if(this->nodes.size()>1){
+        if(this->nodes.size()>0){
             totCost += this->nodes.back().getCoordinates().dist(backhaul.getCoordinates());
         }
         this->current_capacity += backhaul.getPickup();
@@ -66,4 +69,9 @@ double Route::getCurrent_capacity() const
 void Route::setCurrent_capacity(double value)
 {
     current_capacity = value;
+}
+
+double Route::getTotCost() const
+{
+    return totCost;
 }
