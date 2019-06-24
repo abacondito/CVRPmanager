@@ -181,6 +181,58 @@ bool addBestAdjacentNodeByIndex(const std::vector<Node>& nodeList,std::list<std:
     return false;
 }
 
+bool addBestAdjacentNodeByIndexOptimized(const std::vector<Node>& nodeList,std::list<std::array<size_t,2>>& saveList,
+                                Route& route, const size_t index,const bool lineHaulOrBackhaul){
+
+
+    std::list<std::array<size_t,2>>::iterator it = saveList.begin();
+    size_t candidateIndex;
+    Node otherNode;
+
+    //itero la lista
+    while(it != saveList.end()){
+        //se l'attuale coppia di indici include l'indice di cui cerco il successore:
+        if((*it)[0] == index || (*it)[1] == index){
+
+            //assegno a candidateIndex l'indice del successore
+            if((*it)[0] == index) candidateIndex = (*it)[1];
+            else candidateIndex = (*it)[0];
+
+            //controllo se l'altro nodo ha valori di delivery o pickup soddisfabili:
+            otherNode = nodeList[candidateIndex];
+            if(lineHaulOrBackhaul){
+                //per i Linehaul
+                if(route.addLinehaul(otherNode)){
+                    eraseFromSaveListByItem(saveList,index);
+                    //se si restituisco true
+                    return true;
+                }
+
+                //return false;
+                it++;
+
+            }
+            else {
+                //per i Backhaul
+                if(route.addBackhaul(otherNode)){
+                    eraseFromSaveListByItem(saveList,index);
+                    //se si restituisco true
+                    return true;
+                }
+
+                //return false;
+                it++;
+            }
+        }
+
+        else {
+            it++;
+        }
+    }
+    //non ho trovato l'indice,restituisco fallimento
+    return false;
+}
+
 
 
 
