@@ -170,7 +170,7 @@ void CVRPmanager::addPointToDelaunayTriangulation(const cg3::Point2Dd& p) {
 void CVRPmanager::clearDelaunayTriangulation() {
     //Clear here your Delaunay Triangulation data structure.
     /********************************************************************************************************************/
-
+    routes = Drawable_routes(SCENECENTER,SCENERADIUS);
     /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
 
     /********************************************************************************************************************/
