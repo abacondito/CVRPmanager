@@ -13,6 +13,7 @@
 #include <cg3/utilities/timer.h>
 
 #include <algorithms/cvrp.h>
+#include <algorithms/cvrpar.h>
 
 
 //Limits for the bounding box

@@ -10,17 +10,11 @@
 #include <iostream>
 #include <fstream>
 
-std::array<size_t,2> getMaxIndexes(cg3::Array2D<double> matrix);
+#include <algorithms/cvrputils.h>
 
-void bootRoute(const Topology& topology);
-void growRoute(const Topology& topology);
-
-void computeDistTable(const std::vector<Node>& nodes, cg3::Array2D<double>& table);
-void computeSaveTable(const cg3::Array2D<double>& distTable, cg3::Array2D<double>& saveTable);
-void computeSaveList(cg3::Array2D<double>& saveTable, std::list<std::array<size_t,2>>& saveList);
 
 void cWseqTresh(const Topology& topology,Routes& routes);
-void cWpar(const Topology& topology,Routes& routes);
+
 void cWseq(const Topology& topology,Routes& routes);
 
 
