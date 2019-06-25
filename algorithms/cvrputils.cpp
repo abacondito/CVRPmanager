@@ -49,7 +49,7 @@ void computeSaveList(cg3::Array2D<double>& saveTable, std::list<std::array<size_
 
 }
 
-void writeOnFile(Routes& routes){
+void writeOnFile(Routes& routes,int nNodes){
 
     std::ofstream myfile ("TestRoutes.txt");
 
@@ -86,14 +86,28 @@ void writeOnFile(Routes& routes){
 
     if (myfile.is_open())
     {
-        myfile << "\n" << "All nodes:\n";
+        myfile << "\n" << "Missing nodes:\n";
     }
 
     std::sort(allNodes.begin(),allNodes.end());
 
+    bool isPresent[nNodes];
+
+    for (size_t i = 0;i < nNodes;i++) {
+        isPresent[i] = false;
+    }
+
     for (size_t i = 0;i < allNodes.size();i++) {
-        myfile << allNodes[i];
-        myfile << "   ";
+        //myfile << allNodes[i];
+        //myfile << "   ";
+        isPresent[allNodes[i]] = true;
+    }
+
+    for (size_t i = 0;i < nNodes;i++) {
+        if(isPresent[i] == false){
+            myfile << i;
+            myfile << "   ";
+        }
     }
 
     if (myfile.is_open())

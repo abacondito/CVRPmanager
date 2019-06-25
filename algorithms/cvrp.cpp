@@ -322,7 +322,7 @@ void cWseqTresh(const Topology& topology,Routes& routes){
         routes.addRoute(tmpRoute);
     }
 
-    writeOnFile(routes);
+    writeOnFile(routes,topology.getNode_num());
 
 }
 
@@ -368,8 +368,6 @@ void cWseq(const Topology& topology,Routes& routes){
     int unassignedLinehaulsNodes = topology.getLinehaulNodes().size() -1;
 
     size_t nodeLeftBehindB = 0;
-
-
 
     for (int i=0;i<topology.getVehicle_num();i++) {
 
@@ -463,7 +461,7 @@ void cWseq(const Topology& topology,Routes& routes){
         routes.addRoute(tmpRoute);
     }
 
-    writeOnFile(routes);
+    writeOnFile(routes,topology.getNode_num());
 
 }
 

@@ -276,6 +276,6 @@ void cWpar(const Topology& topology,Routes& routes){
 
     routes.setRoutes(tmpRoutes);
 
-    writeOnFile(routes);
+    writeOnFile(routes,topology.getNode_num());
 
 }

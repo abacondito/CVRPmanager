@@ -13,7 +13,7 @@ void computeDistTable(const std::vector<Node>& nodes, cg3::Array2D<double>& tabl
 void computeSaveTable(const cg3::Array2D<double>& distTable, cg3::Array2D<double>& saveTable);
 void computeSaveList(cg3::Array2D<double>& saveTable, std::list<std::array<size_t,2>>& saveList);
 
-void writeOnFile(Routes& routes);
+void writeOnFile(Routes& routes,int nNodes);
 std::array<size_t,2> getMaxIndexes(cg3::Array2D<double> matrix);
 void eraseFromSaveListByItem(std::list<std::array<size_t,2>>& saveList,size_t index);
 

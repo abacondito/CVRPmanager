@@ -310,10 +310,10 @@ void CVRPmanager::checkTriangulation() {
  */
 void CVRPmanager::launchAlgorithmAndMeasureTime() { //Do not write code here
     //Output message
-    std::cout << "Executing the algorithm for " << this->points.size() << " points..." << std::endl;
+    //std::cout << "Executing the algorithm for " << this->points.size() << " points..." << std::endl;
 
     //Timer for evaluating the efficiency of the algorithm
-    cg3::Timer t("Delaunay Triangulation generation");
+    cg3::Timer t("Computing cvrp");
 
     //Launch delaunay algorithm on the vector of input points
     computeDelaunayTriangulation(this->points);
@@ -364,7 +364,18 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
 
         //Launch the algorithm on the current vector of points and measure
         //its efficiency with a timer
-        cWpar(topology,routes);
+        int selected = this->ui->selectVersion->currentIndex();
+
+        switch(selected)
+        {
+        case(0):
+            cWseqTresh(topology,routes);
+            break;
+        case(1):
+            cWseq(topology,routes);
+        case(2):
+            cWpar(topology,routes);
+        }
         launchAlgorithmAndMeasureTime();
 
         //Draw Delaunay Triangulation
