@@ -704,9 +704,6 @@ void cWpar(const Topology& topology,Routes& routes){
     size_t lastNodeAdded;
     std::array<size_t,2> nodeCouple;
 
-    bool hasNotFailed = true;
-
-
     std::list<std::array<size_t,2>>::iterator it;
     int finishedRoutes = 0;
     int k = 0;
@@ -716,6 +713,15 @@ void cWpar(const Topology& topology,Routes& routes){
     bool hasFinshedLinehaul[topology.getVehicle_num()];
     bool mustDoIntermediatePass[topology.getVehicle_num()];
     bool finished[topology.getVehicle_num()];
+    bool hasAssigned;
+    size_t nodeIndex1;
+    size_t nodeIndex2;
+    Node node1;
+    Node node2;
+    size_t nodeLeftBehindL = 0;
+    size_t nodeLeftBehindB = 0;
+
+    //inizializzo le route con le coppie di linehaul con il saving maggiore
 
     for (int i = 0;i<topology.getVehicle_num();i++) {
 
@@ -723,33 +729,98 @@ void cWpar(const Topology& topology,Routes& routes){
         mustDoIntermediatePass[i] = true;
         finished[i] = false;
 
-        tmpRoute = Route(topology.getCapacity());
-        nodeCouple = saveListLinehaul.front();
-        saveListLinehaul.erase(saveListLinehaul.begin());
-        tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[0]]);
-        tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[1]]);
-        eraseFromSaveListByItem(saveListLinehaul,nodeCouple[0]);
-        tmpRoutes.push_back(tmpRoute);
+        std::list<std::array<size_t,2>>::iterator it = saveListLinehaul.begin();
 
+        hasAssigned = false;
+
+        tmpRoute = Route(topology.getCapacity());
+
+        while(it != saveListLinehaul.end() && !hasAssigned){
+
+            nodeCouple = *(it);
+            nodeIndex1 = nodeCouple[0] + (topology.getBackhaulNodes().size() - 1);
+            nodeIndex2 = nodeCouple[1] + (topology.getBackhaulNodes().size() - 1);
+            //se la coppia non è presente in nessuna route
+            if(!nodeInOtherRoutes(nodeIndex1,tmpRoutes) && !nodeInOtherRoutes(nodeIndex2,tmpRoutes)){
+
+
+                node1 = topology.getLinehaulNodes()[nodeCouple[0]];
+                node2 = topology.getLinehaulNodes()[nodeCouple[1]];
+
+
+                //controllo se posso caricare i nodi
+                if((node1.getDelivery() + node2.getDelivery()) <=  tmpRoute.getCurrent_capacity()){
+
+                    //aggiungo la coppia
+                    saveListLinehaul.erase(it);
+                    tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[0]]);
+                    tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[1]]);
+                    eraseFromSaveListByItem(saveListLinehaul,nodeCouple[0]);
+                    tmpRoutes.push_back(tmpRoute);
+                    hasAssigned = true;
+                }
+            }
+
+            it++;
+        }
     }
 
 
     while(finishedRoutes < topology.getVehicle_num()){
 
+        tmpRoute = tmpRoutes[k];
 
-        while(!hasFinshedLinehaul[k]){
-            lastNodeAdded = tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
+        //Se la rotta non è finita
+        if(!finished[k]){
+            //Fase di soli Linehaul
+            if(!hasFinshedLinehaul[k] && saveListLinehaul.size() > 0){
+                lastNodeAdded = tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
 
-            hasFinshedLinehaul[k] = !(addBestAdjacentNodeByIndexPar(topology.getLinehaulNodes(),saveListLinehaul,tmpRoutes,
-                                                       k,lastNodeAdded,true));
+                hasFinshedLinehaul[k] = !(addBestAdjacentNodeByIndexPar(topology.getLinehaulNodes(),saveListLinehaul,tmpRoutes,
+                                                           k,lastNodeAdded,true));
+
+                if(hasFinshedLinehaul[k]) mustDoIntermediatePass[k]=true;
+            }
+
+
+            //Fase passo intermedio
+            if(hasFinshedLinehaul[k] && mustDoIntermediatePass[k]){
+
+                size_t best = findBestBackhaulSuccessorFromLinehaul
+                        (topology.getLinehaulNodes()[lastNodeAdded],topology.getBackhaulNodes(),saveListBackhaul);
+                if(best != 0){
+                    tmpRoute.addBackhaul(topology.getBackhaulNodes()[best]);
+                }
+
+                lastNodeAdded = tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
+
+                eraseFromSaveListByItem(saveListLinehaul, lastNodeAdded);
+
+                mustDoIntermediatePass[k]=false;
+
+
+            }
+
+            //Fase di soli Backhaul
+            if(hasFinshedLinehaul[k] && !mustDoIntermediatePass[k] && saveListBackhaul.size() > 0){
+
+                lastNodeAdded = tmpRoute.getLastNode().getIndex();
+
+                finished[k] = !(addBestAdjacentNodeByIndexPar(topology.getBackhaulNodes(),saveListBackhaul,tmpRoutes,
+                                                           k,lastNodeAdded,false));
+                if(finished[k]){
+                    tmpRoute.addLinehaul(topology.getLinehaulNodes()[0]);
+                    finishedRoutes ++;
+                }
+            }
         }
 
-        if(hasFinshedLinehaul[k] && mustDoIntermediatePass[k]){
-
-        }
-
-
+        k = ++k % topology.getVehicle_num();
     }
+
+    routes.setRoutes(tmpRoutes);
+
+    writeOnFile(routes);
 
 }
 

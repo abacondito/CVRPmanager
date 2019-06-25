@@ -363,7 +363,7 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
 
         //Launch the algorithm on the current vector of points and measure
         //its efficiency with a timer
-        cWseq(topology,routes);
+        cWpar(topology,routes);
         launchAlgorithmAndMeasureTime();
 
         //Draw Delaunay Triangulation
