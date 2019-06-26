@@ -193,7 +193,7 @@ void cWpar(const Topology& topology,Routes& routes){
 
 
                 //controllo se posso caricare i nodi
-                if((node1.getDelivery() + node2.getDelivery()) <=  tmpRoute.getCurrent_capacity()){
+                if((node1.getDelivery() + node2.getDelivery()) <=  tmpRoute.getCurrent_capacity_linehaul()){
 
                     //aggiungo la coppia
                     saveListLinehaul.erase(it);

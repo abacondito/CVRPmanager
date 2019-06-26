@@ -3,18 +3,19 @@
 Route::Route(double max_capacity)
 {
     this->max_capacity = max_capacity;
-    this->current_capacity = max_capacity;
+    this->current_capacity_linehaul = max_capacity;
+    this->current_capacity_backhaul = max_capacity;
 }
 
 bool Route::addLinehaul(Node& linehaul){
-    if(this->current_capacity >= linehaul.getDelivery()){
+    if(this->current_capacity_linehaul >= linehaul.getDelivery()){
         if(this->nodes.size()>0){
-            cg3::Point2Dd last = this->nodes.back().getCoordinates();
+            /*cg3::Point2Dd last = this->nodes.back().getCoordinates();
             cg3::Point2Dd current = linehaul.getCoordinates();
-            double dist = last.dist(current);
+            double dist = last.dist(current);*/
             totCost += this->nodes.back().getCoordinates().dist(linehaul.getCoordinates());
         }
-        this->current_capacity -= linehaul.getDelivery();
+        this->current_capacity_linehaul -= linehaul.getDelivery();
         this->nodes.push_back(linehaul);
         return true;
     }
@@ -23,11 +24,11 @@ bool Route::addLinehaul(Node& linehaul){
 }
 
 bool Route::addBackhaul(Node& backhaul){
-    if((this->max_capacity - this->current_capacity) >= backhaul.getPickup()){
+    if((this->current_capacity_backhaul) >= backhaul.getPickup()){
         if(this->nodes.size()>0){
             totCost += this->nodes.back().getCoordinates().dist(backhaul.getCoordinates());
         }
-        this->current_capacity += backhaul.getPickup();
+        this->current_capacity_backhaul -= backhaul.getPickup();
         this->nodes.push_back(backhaul);
         return true;
     }
@@ -61,17 +62,27 @@ void Route::setMax_capacity(double value)
     max_capacity = value;
 }
 
-double Route::getCurrent_capacity() const
-{
-    return current_capacity;
-}
-
-void Route::setCurrent_capacity(double value)
-{
-    current_capacity = value;
-}
-
 double Route::getTotCost() const
 {
     return totCost;
+}
+
+double Route::getCurrent_capacity_linehaul() const
+{
+    return current_capacity_linehaul;
+}
+
+void Route::setCurrent_capacity_linehaul(double value)
+{
+    current_capacity_linehaul = value;
+}
+
+double Route::getCurrent_capacity_backhaul() const
+{
+    return current_capacity_backhaul;
+}
+
+void Route::setCurrent_capacity_backhaul(double value)
+{
+    current_capacity_backhaul = value;
 }

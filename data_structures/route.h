@@ -20,15 +20,21 @@ public:
     double getMax_capacity() const;
     void setMax_capacity(double value);
 
-    double getCurrent_capacity() const;
-    void setCurrent_capacity(double value);
+
 
     double getTotCost() const;
+
+    double getCurrent_capacity_linehaul() const;
+    void setCurrent_capacity_linehaul(double value);
+
+    double getCurrent_capacity_backhaul() const;
+    void setCurrent_capacity_backhaul(double value);
 
 protected:
     double totCost = 0.0;
     double max_capacity;
-    double current_capacity;
+    double current_capacity_linehaul;
+    double current_capacity_backhaul;
     std::vector<Node> nodes;
 };
 
