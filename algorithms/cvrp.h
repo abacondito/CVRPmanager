@@ -13,9 +13,13 @@
 #include <algorithms/cvrputils.h>
 
 
+bool gyakuKeiroNoJutsu(Route& route,std::vector<Node>& backhauls,std::list<std::array<size_t,2>>& saveBackhaulList);
+
 void cWseqTresh(const Topology& topology,Routes& routes);
 
 void cWseq(const Topology& topology,Routes& routes);
+
+void cWseqBoh(const Topology& topology,Routes& routes);
 
 
 #endif // CVRP_H

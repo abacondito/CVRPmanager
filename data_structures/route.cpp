@@ -36,6 +36,17 @@ bool Route::addBackhaul(Node& backhaul){
     return false;
 }
 
+void Route::reverse(){
+    std::vector<Node> tmpNodes;
+    tmpNodes.push_back(this->nodes[0]);
+
+    for (size_t i = this->nodes.size() -1;i >0;i--) {
+        tmpNodes.push_back(this->nodes[i]);
+    }
+
+    this->nodes = tmpNodes;
+}
+
 void Route::addStartingPoint(Node& startingPoint){
     this->nodes.push_back(startingPoint);
 }

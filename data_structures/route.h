@@ -11,6 +11,7 @@ public:
     Route(double max_capacity);
     bool addLinehaul(Node& linehaul);
     bool addBackhaul(Node& backhaul);
+    void reverse();
     void addStartingPoint(Node& startingPoint);
     Node& getLastNode();
     Node& getNodeByIndex(size_t index);

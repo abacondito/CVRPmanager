@@ -13,6 +13,79 @@ bool nodeInOtherRoutes(size_t nodeIndex,std::vector<Route>& routes){
 }
 
 
+bool gyakuKeiroNoJutsuPar(Route& route,std::vector<Node>& backhauls,std::vector<Route>& routes,std::list<std::array<size_t,2>>& saveBackhaulList){
+
+    size_t maxIndex1 = 0;
+    double maxSaving1 = 0.0;
+    double saving1 = 0.0;
+
+    size_t maxIndex2 = 0;
+    double maxSaving2 = 0.0;
+    double saving2 = 0.0;
+
+    Node linehaulFirst = route.getNodeByIndex(1);
+    Node linehaulLast = route.getLastNode();
+
+    double distLinehaulBackhaul, distLinehaulFromStart, distBackhaulFromStart;
+
+    std::list<std::array<size_t,2>>::iterator it = saveBackhaulList.begin();
+
+    while(it != saveBackhaulList.end()){
+
+        for (size_t i=0;i<2;i++) {
+            size_t index = (*it)[i];
+
+            Node currentBackhaul = backhauls[index];
+
+            if(!nodeInOtherRoutes(currentBackhaul.getIndex(),routes)){
+                saving1=0.0;
+                distLinehaulBackhaul = linehaulFirst.getCoordinates().dist(currentBackhaul.getCoordinates());
+                distLinehaulFromStart = linehaulFirst.getCoordinates().dist(backhauls[0].getCoordinates());
+                distBackhaulFromStart = currentBackhaul.getCoordinates().dist(backhauls[0].getCoordinates());
+
+                saving1 = distBackhaulFromStart + distLinehaulFromStart - distLinehaulBackhaul;
+
+                if(saving1 > maxSaving1){
+                    maxSaving1 = saving1;
+                    maxIndex1 = index;
+                }
+
+                distLinehaulBackhaul = linehaulLast.getCoordinates().dist(currentBackhaul.getCoordinates());
+                distLinehaulFromStart = linehaulLast.getCoordinates().dist(backhauls[0].getCoordinates());
+
+                saving2 = distBackhaulFromStart + distLinehaulFromStart - distLinehaulBackhaul;
+
+                if(saving2 > maxSaving2){
+                    maxSaving2 = saving2;
+                    maxIndex2 = index;
+                }
+            }
+        }
+
+        it++;
+    }
+
+    if(maxSaving1 > maxSaving2){
+
+        if(maxIndex1 != 0){
+            route.reverse();
+            if(route.addBackhaul(backhauls[maxIndex1])) return true;
+            else {
+                route.reverse();
+            }
+        }
+
+    }
+    else {
+        if(maxIndex2 != 0){
+            if(route.addBackhaul(backhauls[maxIndex2])) return true;
+        }
+    }
+
+    return false;
+}
+
+
 //cerca il miglior successore backhaul per un linehaul
 
 size_t findBestBackhaulSuccessorFromLinehaulPar(Node& linehaul,const std::vector<Node>& backhauls,std::vector<Route>& routes,std::list<std::array<size_t,2>>& saveBackhaulList){
@@ -235,11 +308,22 @@ void cWpar(const Topology& topology,Routes& routes){
 
                 lastNodeAdded = tmpRoutes[k].getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
 
-                size_t best = findBestBackhaulSuccessorFromLinehaulPar
+                /*size_t best = findBestBackhaulSuccessorFromLinehaulPar
                         (topology.getLinehaulNodes()[lastNodeAdded],topology.getBackhaulNodes(),tmpRoutes,saveListBackhaul);
                 if(best != 0){
                    tmpRoutes[k].addBackhaul(topology.getBackhaulNodes()[best]);
                    mustDoIntermediatePass[k]=false;
+                }
+                else {
+                    finished[k] = true;
+                    tmpRoutes[k].addLinehaul(topology.getLinehaulNodes()[0]);
+                    finishedRoutes++;
+                }*/
+
+                std::vector<Node> tmpNodes = topology.getBackhaulNodes();
+
+                if(gyakuKeiroNoJutsuPar(tmpRoutes[k],tmpNodes,tmpRoutes,saveListBackhaul)){
+                    mustDoIntermediatePass[k]=false;
                 }
                 else {
                     finished[k] = true;

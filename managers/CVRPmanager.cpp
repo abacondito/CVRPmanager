@@ -373,8 +373,12 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
             break;
         case(1):
             cWseq(topology,routes);
+            break;
         case(2):
             cWpar(topology,routes);
+            break;
+        case(3):
+            cWseqBoh(topology,routes);
         }
         launchAlgorithmAndMeasureTime();
 

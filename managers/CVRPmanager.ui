@@ -157,6 +157,11 @@
         <string>CWpar</string>
        </property>
       </item>
+      <item>
+       <property name="text">
+        <string>CW</string>
+       </property>
+      </item>
      </widget>
     </item>
    </layout>

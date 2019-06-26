@@ -6,6 +6,8 @@
 
 #include <algorithms/cvrputils.h>
 
+bool gyakuKeiroNoJutsuPar(Route& route,std::vector<Node>& backhauls,std::vector<Route>& routes,std::list<std::array<size_t,2>>& saveBackhaulList);
+
 void cWpar(const Topology& topology,Routes& routes);
 
 #endif // CVRPAR_H
