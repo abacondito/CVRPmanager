@@ -472,7 +472,7 @@ void cWseq(const Topology& topology,Routes& routes){
         while(hasNotFailed && (unassignedLinehaulsNodes > 2*(topology.getVehicle_num()-i-1)) && (saveListLinehaul.size() > 0)){
             lastNodeAdded = tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
 
-            hasNotFailed = addBestAdjacentNodeByIndexOptimized(topology.getLinehaulNodes(),saveListLinehaul,
+            hasNotFailed = addBestAdjacentNodeByIndex(topology.getLinehaulNodes(),saveListLinehaul,
                                                        tmpRoute,lastNodeAdded,true);
 
 
@@ -500,10 +500,10 @@ void cWseq(const Topology& topology,Routes& routes){
         //segnala se il veicolo ha capacità sufficiente a soddisfare il pickup del successore ottimale(saving più alto) nella route
         hasNotFailed = true;
 
-        while(hasNotFailed && (saveListBackhaul.size() > 0 /*|| nodeLeftBehindB != 0*/)){
+        while(hasNotFailed && (saveListBackhaul.size() > 0 || nodeLeftBehindB != 0)){
             lastNodeAdded = tmpRoute.getLastNode().getIndex();
 
-            /*if(nodeLeftBehindB != 0){
+            if(nodeLeftBehindB != 0){
                 if(tmpRoute.addBackhaul(topology.getBackhaulNodes()[nodeLeftBehindB])){
                     nodeLeftBehindB = 0;
                 }
@@ -511,16 +511,16 @@ void cWseq(const Topology& topology,Routes& routes){
                     hasNotFailed = false;
                 }
             }
-            else {*/
+            else {
                 //prova ad aggiungere il miglior successore e aggiorna hasNotFailed con true se è riuscito o false se ha fallito
                 hasNotFailed = addBestAdjacentNodeByIndex(topology.getBackhaulNodes(),saveListBackhaul,
                                                           tmpRoute,lastNodeAdded,false);
-            //}
+            }
 
 
             if(hasNotFailed){
 
-                /*if(saveListBackhaul.size() == 1){
+                if(saveListBackhaul.size() == 1){
                     if(saveListBackhaul.front()[0] == tmpRoute.getLastNode().getIndex()){
                         nodeLeftBehindB = saveListBackhaul.front()[1];
                     }
@@ -528,7 +528,7 @@ void cWseq(const Topology& topology,Routes& routes){
                         nodeLeftBehindB = saveListBackhaul.front()[0];
                     }
                     saveListBackhaul.erase(saveListBackhaul.begin());
-                }*/
+                }
             }
             else {
                 eraseFromSaveListByItem(saveListBackhaul,tmpRoute.getLastNode().getIndex());
