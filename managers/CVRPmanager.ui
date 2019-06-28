@@ -144,12 +144,12 @@
      <widget class="QComboBox" name="selectVersion">
       <item>
        <property name="text">
-        <string>CWseqTresh</string>
+        <string>CWseqRefined</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>CWseq</string>
+        <string>CWseqRaw</string>
        </property>
       </item>
       <item>

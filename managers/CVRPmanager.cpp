@@ -369,10 +369,10 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
         switch(selected)
         {
         case(0):
-            cWseqTresh(topology,routes);
+            cWseqRefined(topology,routes);
             break;
         case(1):
-            cWseq(topology,routes);
+            cWseqRaw(topology,routes);
             break;
         case(2):
             cWpar(topology,routes);

@@ -17,7 +17,9 @@ bool gyakuKeiroNoJutsu(Route& route,std::vector<Node>& backhauls,std::list<std::
 
 void cWseqTresh(const Topology& topology,Routes& routes);
 
-void cWseq(const Topology& topology,Routes& routes);
+void cWseqRefined(const Topology& topology,Routes& routes);
+
+void cWseqRaw(const Topology& topology,Routes& routes);
 
 void cWseqBoh(const Topology& topology,Routes& routes);
 
