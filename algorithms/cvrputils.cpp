@@ -117,6 +117,74 @@ void writeOnFile(Routes& routes,int nNodes){
     }
 }
 
+void writeOnExistingFile(Routes& routes,int nNodes,std::string& path){
+
+    std::ofstream myfile (path);
+
+    std::vector<int> allNodes;
+
+    double totCost = 0.0;
+
+    for (size_t i = 0;i < routes.getRoutes().size();i++) {
+
+        if (myfile.is_open())
+        {
+            //myfile << i << "   ";
+            myfile << "Max cost:" << routes.getRoutes()[i].getTotCost() << "   ";
+            totCost += routes.getRoutes()[i].getTotCost();
+        }
+
+        for (size_t j = 0; j < routes.getRoutes()[i].getRouteSize();j++) {
+
+            if (myfile.is_open())
+            {
+              Node node = routes.getRoutes()[i].getNodeByIndex(j);
+              if(node.getIndex() != 0){
+                  allNodes.push_back(node.getIndex());
+              }
+              myfile << node.getIndex();
+              myfile << "   ";
+            }
+        }
+        if (myfile.is_open())
+        {
+            myfile << "\n";
+        }
+    }
+
+    if (myfile.is_open())
+    {
+        myfile << "\n" << "Missing nodes:\n";
+    }
+
+    std::sort(allNodes.begin(),allNodes.end());
+
+    bool isPresent[nNodes];
+
+    for (size_t i = 0;i < nNodes;i++) {
+        isPresent[i] = false;
+    }
+
+    for (size_t i = 0;i < allNodes.size();i++) {
+        //myfile << allNodes[i];
+        //myfile << "   ";
+        isPresent[allNodes[i]] = true;
+    }
+
+    for (size_t i = 0;i < nNodes;i++) {
+        if(isPresent[i] == false){
+            myfile << i;
+            myfile << "   ";
+        }
+    }
+
+    if (myfile.is_open())
+    {
+        myfile << "\n" << "\n" << "Tot Cost :" << totCost;
+        myfile.close();
+    }
+}
+
 
 
 //Ottiene il massimo da un array2D e i rispettivi indici

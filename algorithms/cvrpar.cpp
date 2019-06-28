@@ -182,6 +182,58 @@ bool addBestAdjacentNodeByIndexPar(const std::vector<Node>& nodeList,std::list<s
     return false;
 }
 
+bool addBestAdjacentNodeByIndexOptimizedPar(const std::vector<Node>& nodeList,std::list<std::array<size_t,2>>& saveList,std::vector<Route>& routes,
+                                size_t routeIndex, const size_t index,const bool lineHaulOrBackhaul){
+
+
+    std::list<std::array<size_t,2>>::iterator it = saveList.begin();
+    size_t candidateIndex;
+    Node otherNode;
+
+    //itero la lista
+    while(it != saveList.end()){
+        //se l'attuale coppia di indici include l'indice di cui cerco il successore:
+        if((*it)[0] == index || (*it)[1] == index){
+
+            //assegno a candidateIndex l'indice del successore
+            if((*it)[0] == index) candidateIndex = (*it)[1];
+            else candidateIndex = (*it)[0];
+
+            //controllo se l'altro nodo ha valori di delivery o pickup soddisfabili:
+            otherNode = nodeList[candidateIndex];
+            if(!nodeInOtherRoutes(otherNode.getIndex(),routes)){
+
+                if(lineHaulOrBackhaul){
+                    //per i Linehaul
+
+                    if(routes[routeIndex].addLinehaul(otherNode)){
+                        eraseFromSaveListByItem(saveList,index);
+                        //se si restituisco true
+                        return true;
+                    }
+
+                }
+                else {
+                    //per i Backhaul
+                    if(routes[routeIndex].addBackhaul(otherNode)){
+                        eraseFromSaveListByItem(saveList,index);
+                        //se si restituisco true
+                        return true;
+                    }
+
+                }
+
+            }
+
+        }
+
+    it++;
+
+    }
+    //non ho trovato l'indice,restituisco fallimento
+    return false;
+}
+
 
 //CW parallelo
 
@@ -291,15 +343,17 @@ void cWpar(const Topology& topology,Routes& routes){
             if(!hasFinshedLinehaul[k] && saveListLinehaul.size() > 0){
                 lastNodeAdded = tmpRoutes[k].getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
 
-                hasFinshedLinehaul[k] = !(addBestAdjacentNodeByIndexPar(topology.getLinehaulNodes(),saveListLinehaul,tmpRoutes,
+                hasFinshedLinehaul[k] = !(addBestAdjacentNodeByIndexOptimizedPar(topology.getLinehaulNodes(),saveListLinehaul,tmpRoutes,
                                                            k,lastNodeAdded,true));
 
                 if(hasFinshedLinehaul[k]) mustDoIntermediatePass[k]=true;
             }
             else if (!hasFinshedLinehaul[k] && saveListLinehaul.size() == 0) {
-                finished[k] = true;
+                /*finished[k] = true;
                 tmpRoutes[k].addLinehaul(topology.getLinehaulNodes()[0]);
-                finishedRoutes++;
+                finishedRoutes++;*/
+                hasFinshedLinehaul[k] = true;
+                mustDoIntermediatePass[k]=true;
             }
 
 
@@ -350,6 +404,7 @@ void cWpar(const Topology& topology,Routes& routes){
             }
             else if (hasFinshedLinehaul[k] && !mustDoIntermediatePass[k] && saveListBackhaul.size() == 0) {
                 finished[k] = true;
+                eraseFromSaveListByItem(saveListBackhaul,lastNodeAdded);
                 tmpRoutes[k].addLinehaul(topology.getLinehaulNodes()[0]);
                 finishedRoutes++;
             }
@@ -360,6 +415,6 @@ void cWpar(const Topology& topology,Routes& routes){
 
     routes.setRoutes(tmpRoutes);
 
-    writeOnFile(routes,topology.getNode_num());
+    //writeOnFile(routes,topology.getNode_num());
 
 }

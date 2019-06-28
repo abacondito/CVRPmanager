@@ -360,6 +360,8 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
         //Load input points in the vector (deleting the previous ones)
         //this->points = FileUtils::getPointsFromFile(filename.toStdString());
 
+        std::string name = filename.toStdString();
+
         Topology topology = FileUtils::getTopologyFromFile(filename.toStdString());
 
         //Launch the algorithm on the current vector of points and measure
@@ -370,16 +372,26 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
         {
         case(0):
             cWseqRefined(topology,routes);
+            name += "_cWseqRefined_test";
             break;
         case(1):
             cWseqRaw(topology,routes);
+            name += "_cWseqRaw_test";
             break;
         case(2):
             cWpar(topology,routes);
+            name += "_cWpar_test";
             break;
-        case(3):
+        /*case(3):
+            name += "cWboh";
             cWseqBoh(topology,routes);
+            break;*/
         }
+
+        std::ofstream myfile (name);
+
+        writeOnExistingFile(this->routes,topology.getNode_num(),name);
+
         launchAlgorithmAndMeasureTime();
 
         //Draw Delaunay Triangulation

@@ -17,8 +17,8 @@ void Drawable_routes::draw() const {
 
         for (size_t j = 0; j < this->getRoutes()[i].getRouteSize();j++) {
             Node node = this->getRoutes()[i].getNodeByIndex(j);
-            cg3::viewer::drawPoint2D(node.getCoordinates(),cg3::Color(),15);
-            cg3::viewer::drawLine2D(previousNode.getCoordinates(),node.getCoordinates(),cg3::Color(),7);
+            cg3::viewer::drawPoint2D(node.getCoordinates(),cg3::Color(/*183*/),15);
+            cg3::viewer::drawLine2D(previousNode.getCoordinates(),node.getCoordinates(),cg3::Color(/*96*/),7);
             previousNode = node;
 
         }

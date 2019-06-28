@@ -540,7 +540,7 @@ void cWseqRefined(const Topology& topology,Routes& routes){
         routes.addRoute(tmpRoute);
     }
 
-    writeOnFile(routes,topology.getNode_num());
+    //writeOnFile(routes,topology.getNode_num());
 
 }
 
@@ -684,7 +684,7 @@ void cWseqRaw(const Topology& topology,Routes& routes){
         routes.addRoute(tmpRoute);
     }
 
-    writeOnFile(routes,topology.getNode_num());
+    //writeOnFile(routes,topology.getNode_num());
 
 }
 
