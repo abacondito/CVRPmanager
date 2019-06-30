@@ -268,7 +268,7 @@ void cWpar(const Topology& topology,Routes& routes){
     computeSaveList(saveTableBackhaul,saveListBackhaul);
 
     //Processo del passo base
-    Route tmpRoute = Route(topology.getCapacity());
+    Route tmpRoute = Route(topology.getCapacity(),0);
     size_t lastNodeAdded;
     std::array<size_t,2> nodeCouple;
 
@@ -301,7 +301,7 @@ void cWpar(const Topology& topology,Routes& routes){
 
         hasAssigned = false;
 
-        tmpRoute = Route(topology.getCapacity());
+        tmpRoute = Route(topology.getCapacity(),i);
         tmpRoute.addLinehaul(topology.getLinehaulNodes()[0]);
 
         while(it != saveListLinehaul.end() && !hasAssigned){

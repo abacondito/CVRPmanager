@@ -124,7 +124,7 @@ CVRPmanager::~CVRPmanager() {
     /********************************************************************************************************************/
 
     //Delete the bounding box drawable object
-    //mainWindow.deleteObj(&boundingBox);
+    mainWindow.deleteObj(&boundingBox);
 
     delete ui; //Delete interface
 }
@@ -195,6 +195,16 @@ void CVRPmanager::drawDelaunayTriangulation() {
     //approach.
     /********************************************************************************************************************/
 
+    std::string routeName;
+
+    for(size_t i = 0;i < this->singleRoutes.size();i++){
+
+        routeName = "Route ";
+        routeName += std::to_string(i);
+
+        mainWindow.pushObj(&this->singleRoutes[i],routeName);
+    }
+
     /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
 
     /********************************************************************************************************************/
@@ -224,6 +234,11 @@ void CVRPmanager::eraseDrawnDelaunayTriangulation() {
     //to avoid using dynamic objects whenever it is possible.
     /********************************************************************************************************************/
 
+
+    for(size_t i = 0;i < this->singleRoutes.size();i++){
+
+        mainWindow.deleteObj(&this->singleRoutes[i]);
+    }
     /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
 
     /********************************************************************************************************************/

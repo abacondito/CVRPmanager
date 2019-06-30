@@ -255,7 +255,7 @@ void cWseqTresh(const Topology& topology,Routes& routes){
     computeSaveList(saveTableBackhaul,saveListBackhaul);
 
     //Processo del passo base
-    Route tmpRoute = Route(topology.getCapacity());
+    Route tmpRoute = Route(topology.getCapacity(),0);
     size_t lastNodeAdded;
     std::array<size_t,2> nodeCouple;
     bool hasNotFailed;
@@ -272,7 +272,7 @@ void cWseqTresh(const Topology& topology,Routes& routes){
         int tmpThresh = threshold;
         //int tmpModuleThresh = module;
 
-        tmpRoute = Route(topology.getCapacity());
+        tmpRoute = Route(topology.getCapacity(),i);
 
         //Richiama la capacità standard di un veicolo
 
@@ -434,7 +434,7 @@ void cWseqRefined(const Topology& topology,Routes& routes){
     computeSaveList(saveTableBackhaul,saveListBackhaul);
 
     //Processo del passo base
-    Route tmpRoute = Route(topology.getCapacity());
+    Route tmpRoute = Route(topology.getCapacity(),0);
     size_t lastNodeAdded;
     std::array<size_t,2> nodeCouple;
     bool hasNotFailed;
@@ -445,7 +445,7 @@ void cWseqRefined(const Topology& topology,Routes& routes){
 
     for (int i=0;i<topology.getVehicle_num();i++) {
 
-        tmpRoute = Route(topology.getCapacity());
+        tmpRoute = Route(topology.getCapacity(),i);
 
         //Richiama la capacità standard di un veicolo
 
@@ -578,7 +578,7 @@ void cWseqRaw(const Topology& topology,Routes& routes){
     computeSaveList(saveTableBackhaul,saveListBackhaul);
 
     //Processo del passo base
-    Route tmpRoute = Route(topology.getCapacity());
+    Route tmpRoute = Route(topology.getCapacity(),0);
     size_t lastNodeAdded;
     std::array<size_t,2> nodeCouple;
     bool hasNotFailed;
@@ -589,7 +589,7 @@ void cWseqRaw(const Topology& topology,Routes& routes){
 
     for (int i=0;i<topology.getVehicle_num();i++) {
 
-        tmpRoute = Route(topology.getCapacity());
+        tmpRoute = Route(topology.getCapacity(),i);
 
         //Richiama la capacità standard di un veicolo
 
@@ -720,7 +720,7 @@ void cWseqBoh(const Topology& topology,Routes& routes){
     computeSaveList(saveTableBackhaul,saveListBackhaul);
 
     //Processo del passo base
-    Route tmpRoute = Route(topology.getCapacity());
+    Route tmpRoute = Route(topology.getCapacity(),0);
     size_t lastNodeAdded;
     std::array<size_t,2> nodeCouple;
     bool hasNotFailed;
@@ -731,7 +731,7 @@ void cWseqBoh(const Topology& topology,Routes& routes){
 
     for (int i=0;i<topology.getVehicle_num();i++) {
 
-        tmpRoute = Route(topology.getCapacity());
+        tmpRoute = Route(topology.getCapacity(),i);
 
         //Richiama la capacità standard di un veicolo
 

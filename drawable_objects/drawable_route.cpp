@@ -1,12 +1,12 @@
-#include "drawable_routes.h"
+#include "drawable_route.h"
 
-Drawable_routes::Drawable_routes(const cg3::Pointd center,const double radius)
+Drawable_route::Drawable_route(double max_capacity,int routeIndex,const cg3::Pointd center,const double radius) : Route(max_capacity,routeIndex)
 {
     this->center = center;
     this->radius = radius;
 }
 
-void Drawable_routes::draw() const {
+void Drawable_route::draw() const {
     //draw each active triangle and his points
 
     std::array<cg3::Color,12> colors;
@@ -25,21 +25,18 @@ void Drawable_routes::draw() const {
     colors[0] = cg3::Color(204,204,0);
 
 
-    for (size_t i = 0;i < this->getRoutes().size();i++) {
-
-        cg3:: Color routeColor = colors[i];
+        cg3:: Color routeColor = colors[this->getRouteIndex()];
         cg3:: Color nodeColor;
 
-        Node previousNode = this->getRoutes()[0].getNodeByIndex(0);
+        Node previousNode = this->nodes[0];
 
-        for (size_t j = 0; j < this->getRoutes()[i].getRouteSize();j++) {
-            Node node = this->getRoutes()[i].getNodeByIndex(j);
-            if(j == 0 || j == (this->getRoutes()[i].getRouteSize() -1)){
+        for (size_t i = 0; i < this->nodes.size();i++) {
+            Node node = this->nodes[i];
+            if(i == 0 || i == (this->nodes.size() - 1)){
                 nodeColor = cg3::Color(0,0,0);
             }
             else if(node.getDelivery() > 0){
                 nodeColor = cg3::Color(0,0,255);
-
             }
             else {
                 nodeColor = cg3::Color(255,0,0);
@@ -50,14 +47,13 @@ void Drawable_routes::draw() const {
 
         }
     }
-}
 
 /**
  * @brief gets the scene center
  * @return the scene center
  */
 
-cg3::Pointd Drawable_routes::sceneCenter() const {
+cg3::Pointd Drawable_route::sceneCenter() const {
     return this->center;
 }
 
@@ -66,8 +62,7 @@ cg3::Pointd Drawable_routes::sceneCenter() const {
  * @return the scene radius
  */
 
-double Drawable_routes::sceneRadius() const {
+double Drawable_route::sceneRadius() const {
     return this->radius;
 }
-
 

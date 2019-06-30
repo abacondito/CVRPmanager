@@ -8,6 +8,7 @@
 #include <cg3/viewer/drawable_objects/2d/drawable_bounding_box2d.h>
 
 #include <drawable_objects/drawable_routes.h>
+#include <drawable_objects/drawable_route.h>
 
 
 namespace Ui {
@@ -43,6 +44,7 @@ private:
     //Declare your private attributes here
     /********************************************************************************************************************/
     Drawable_routes routes;
+    std::vector<Drawable_route> singleRoutes;
     /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
 
     /********************************************************************************************************************/

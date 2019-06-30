@@ -8,7 +8,7 @@
 class Route
 {
 public:
-    Route(double max_capacity);
+    Route(double max_capacity,int routeIndex);
     bool addLinehaul(Node& linehaul);
     bool addBackhaul(Node& backhaul);
     void reverse();
@@ -31,12 +31,16 @@ public:
     double getCurrent_capacity_backhaul() const;
     void setCurrent_capacity_backhaul(double value);
 
+    int getRouteIndex() const;
+    void setRouteIndex(int value);
+
 protected:
     double totCost = 0.0;
     double max_capacity;
     double current_capacity_linehaul;
     double current_capacity_backhaul;
     std::vector<Node> nodes;
+    int routeIndex;
 };
 
 #endif // ROUTE_H

@@ -1,6 +1,6 @@
 #include "route.h"
 
-Route::Route(double max_capacity)
+Route::Route(double max_capacity,int routeIndex)
 {
     this->max_capacity = max_capacity;
     this->current_capacity_linehaul = max_capacity;
@@ -96,4 +96,14 @@ double Route::getCurrent_capacity_backhaul() const
 void Route::setCurrent_capacity_backhaul(double value)
 {
     current_capacity_backhaul = value;
+}
+
+int Route::getRouteIndex() const
+{
+    return routeIndex;
+}
+
+void Route::setRouteIndex(int value)
+{
+    routeIndex = value;
 }
