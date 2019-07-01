@@ -5,6 +5,7 @@ Route::Route(double max_capacity,int routeIndex)
     this->max_capacity = max_capacity;
     this->current_capacity_linehaul = max_capacity;
     this->current_capacity_backhaul = max_capacity;
+    this->routeIndex = routeIndex;
 }
 
 bool Route::addLinehaul(Node& linehaul){

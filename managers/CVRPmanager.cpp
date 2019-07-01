@@ -56,7 +56,7 @@ CVRPmanager::CVRPmanager(QWidget *parent) :
     ui(new Ui::CVRPmanager),
     mainWindow(static_cast<cg3::viewer::MainWindow&>(*parent)),
     boundingBox(cg3::Point2Dd(-BOUNDINGBOX, -BOUNDINGBOX),
-                cg3::Point2Dd(BOUNDINGBOX, BOUNDINGBOX)),routes(SCENECENTER,SCENERADIUS)
+                cg3::Point2Dd(BOUNDINGBOX, BOUNDINGBOX))
 {
     //UI setup
     ui->setupUi(this);
@@ -68,8 +68,6 @@ CVRPmanager::CVRPmanager(QWidget *parent) :
 
     //Add the drawable object to the mainWindow.
     //The mainWindow will take care of rendering the bounding box
-    //mainWindow.pushObj(&boundingBox, "Bounding box");
-    mainWindow.pushObj(&routes, "Routes");
 
     //This updates the canvas (call it whenever you change or
     //add some drawable object)
@@ -120,11 +118,9 @@ CVRPmanager::~CVRPmanager() {
     /********************************************************************************************************************/
 
     /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
-    mainWindow.deleteObj(&routes);
     /********************************************************************************************************************/
 
     //Delete the bounding box drawable object
-    mainWindow.deleteObj(&boundingBox);
 
     delete ui; //Delete interface
 }
@@ -171,7 +167,7 @@ void CVRPmanager::addPointToDelaunayTriangulation(const cg3::Point2Dd& p) {
 void CVRPmanager::clearDelaunayTriangulation() {
     //Clear here your Delaunay Triangulation data structure.
     /********************************************************************************************************************/
-    routes = Drawable_routes(SCENECENTER,SCENERADIUS);
+    this->singleRoutes.clear();
     /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
 
     /********************************************************************************************************************/
@@ -200,7 +196,7 @@ void CVRPmanager::drawDelaunayTriangulation() {
     for(size_t i = 0;i < this->singleRoutes.size();i++){
 
         routeName = "Route ";
-        routeName += std::to_string(i);
+        routeName += std::to_string(i+1);
 
         mainWindow.pushObj(&this->singleRoutes[i],routeName);
     }
@@ -366,11 +362,12 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
                        "*.txt");
 
     if (!filename.isEmpty()) {
-        //Clear current data
-        clearDelaunayTriangulation();
 
         //Delete from the canvas the Delaunay Triangulation
         eraseDrawnDelaunayTriangulation();
+
+        //Clear current data
+        clearDelaunayTriangulation();
 
         //Load input points in the vector (deleting the previous ones)
         //this->points = FileUtils::getPointsFromFile(filename.toStdString());
@@ -386,15 +383,15 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
         switch(selected)
         {
         case(0):
-            cWseqRefined(topology,routes);
+            cWseqRefined(topology,this->singleRoutes);
             name += "_cWseqRefined_test";
             break;
         case(1):
-            cWseqRaw(topology,routes);
+            cWseqRaw(topology,this->singleRoutes);
             name += "_cWseqRaw_test";
             break;
         case(2):
-            cWpar(topology,routes);
+            cWpar2(topology,this->singleRoutes);
             name += "_cWpar_test";
             break;
         /*case(3):
@@ -405,7 +402,7 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
 
         std::ofstream myfile (name);
 
-        writeOnExistingFile(this->routes,topology.getNode_num(),name);
+        writeOnExistingFile(this->singleRoutes,topology.getNode_num(),name);
 
         launchAlgorithmAndMeasureTime();
 

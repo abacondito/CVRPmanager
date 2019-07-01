@@ -11,13 +11,10 @@
 class Drawable_route  : public Route, public cg3::DrawableObject
 {
 public:
-    Drawable_route(double max_capacity,int routeIndex,const cg3::Pointd center,const double radius);
+    Drawable_route(double max_capacity,int routeIndex);
     void draw() const;
     cg3::Pointd sceneCenter() const;
     double sceneRadius() const;
-protected:
-    cg3::Pointd center;
-    double radius;
 };
 
 

@@ -49,7 +49,7 @@ void computeSaveList(cg3::Array2D<double>& saveTable, std::list<std::array<size_
 
 }
 
-void writeOnFile(Routes& routes,int nNodes){
+void writeOnFile(std::vector<Drawable_route>& routes,int nNodes){
 
     std::ofstream myfile ("TestRoutes.txt");
 
@@ -57,20 +57,20 @@ void writeOnFile(Routes& routes,int nNodes){
 
     double totCost = 0.0;
 
-    for (size_t i = 0;i < routes.getRoutes().size();i++) {
+    for (size_t i = 0;i < routes.size();i++) {
 
         if (myfile.is_open())
         {
             //myfile << i << "   ";
-            myfile << "Max cost:" << routes.getRoutes()[i].getTotCost() << "   ";
-            totCost += routes.getRoutes()[i].getTotCost();
+            myfile << "Max cost:" << routes[i].getTotCost() << "   ";
+            totCost += routes[i].getTotCost();
         }
 
-        for (size_t j = 0; j < routes.getRoutes()[i].getRouteSize();j++) {
+        for (size_t j = 0; j < routes[i].getRouteSize();j++) {
 
             if (myfile.is_open())
             {
-              Node node = routes.getRoutes()[i].getNodeByIndex(j);
+              Node node = routes[i].getNodeByIndex(j);
               if(node.getIndex() != 0){
                   allNodes.push_back(node.getIndex());
               }
@@ -117,7 +117,7 @@ void writeOnFile(Routes& routes,int nNodes){
     }
 }
 
-void writeOnExistingFile(Routes& routes,int nNodes,std::string& path){
+void writeOnExistingFile(std::vector<Drawable_route>& routes,int nNodes,std::string& path){
 
     std::ofstream myfile (path);
 
@@ -125,20 +125,20 @@ void writeOnExistingFile(Routes& routes,int nNodes,std::string& path){
 
     double totCost = 0.0;
 
-    for (size_t i = 0;i < routes.getRoutes().size();i++) {
+    for (size_t i = 0;i < routes.size();i++) {
 
         if (myfile.is_open())
         {
             //myfile << i << "   ";
-            myfile << "Max cost:" << routes.getRoutes()[i].getTotCost() << "   ";
-            totCost += routes.getRoutes()[i].getTotCost();
+            myfile << "Max cost:" << routes[i].getTotCost() << "   ";
+            totCost += routes[i].getTotCost();
         }
 
-        for (size_t j = 0; j < routes.getRoutes()[i].getRouteSize();j++) {
+        for (size_t j = 0; j < routes[i].getRouteSize();j++) {
 
             if (myfile.is_open())
             {
-              Node node = routes.getRoutes()[i].getNodeByIndex(j);
+              Node node = routes[i].getNodeByIndex(j);
               if(node.getIndex() != 0){
                   allNodes.push_back(node.getIndex());
               }

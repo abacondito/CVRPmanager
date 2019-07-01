@@ -1,9 +1,7 @@
 #include "drawable_route.h"
 
-Drawable_route::Drawable_route(double max_capacity,int routeIndex,const cg3::Pointd center,const double radius) : Route(max_capacity,routeIndex)
+Drawable_route::Drawable_route(double max_capacity,int routeIndex) : Route(max_capacity,routeIndex)
 {
-    this->center = center;
-    this->radius = radius;
 }
 
 void Drawable_route::draw() const {
@@ -22,7 +20,7 @@ void Drawable_route::draw() const {
     colors[3] = cg3::Color(0,153,0);
     colors[2] = cg3::Color(255,153,153);
     colors[1] = cg3::Color(255,128,0);
-    colors[0] = cg3::Color(204,204,0);
+    colors[0] = cg3::Color(102,51,0);
 
 
         cg3:: Color routeColor = colors[this->getRouteIndex()];
@@ -54,7 +52,7 @@ void Drawable_route::draw() const {
  */
 
 cg3::Pointd Drawable_route::sceneCenter() const {
-    return this->center;
+    return cg3::Pointd(0,0,0);
 }
 
 /**
@@ -63,6 +61,6 @@ cg3::Pointd Drawable_route::sceneCenter() const {
  */
 
 double Drawable_route::sceneRadius() const {
-    return this->radius;
+    return 1e+5;
 }
 

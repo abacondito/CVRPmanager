@@ -221,7 +221,7 @@ bool addBestAdjacentNodeByIndexOptimized(const std::vector<Node>& nodeList,std::
 //CW sequenziale che usa una soglia
 
 
-void cWseqTresh(const Topology& topology,Routes& routes){
+void cWseqTresh(const Topology& topology,std::vector<Drawable_route>& routes){
     int threshold=(topology.getLinehaulNodes().size()-1)/(topology.getVehicle_num());
     int module = (topology.getLinehaulNodes().size()-1)%(topology.getVehicle_num());
 
@@ -255,7 +255,7 @@ void cWseqTresh(const Topology& topology,Routes& routes){
     computeSaveList(saveTableBackhaul,saveListBackhaul);
 
     //Processo del passo base
-    Route tmpRoute = Route(topology.getCapacity(),0);
+    Drawable_route tmpRoute = Drawable_route(topology.getCapacity(),0);
     size_t lastNodeAdded;
     std::array<size_t,2> nodeCouple;
     bool hasNotFailed;
@@ -272,7 +272,7 @@ void cWseqTresh(const Topology& topology,Routes& routes){
         int tmpThresh = threshold;
         //int tmpModuleThresh = module;
 
-        tmpRoute = Route(topology.getCapacity(),i);
+        tmpRoute = Drawable_route(topology.getCapacity(),i);
 
         //Richiama la capacità standard di un veicolo
 
@@ -393,16 +393,16 @@ void cWseqTresh(const Topology& topology,Routes& routes){
 
         tmpRoute.addLinehaul(topology.getLinehaulNodes()[0]);
 
-        routes.addRoute(tmpRoute);
+        routes.push_back(tmpRoute);
     }
 
-    writeOnFile(routes,topology.getNode_num());
+    //writeOnFile(routes,topology.getNode_num());
 
 }
 
 //CW sequenziale refined che aggiunge due coppie agli ultimi veicoli rimasti
 
-void cWseqRefined(const Topology& topology,Routes& routes){
+void cWseqRefined(const Topology& topology,std::vector<Drawable_route>& routes){
 
     size_t nNodesLinehaul=topology.getLinehaulNodes().size();
 
@@ -434,7 +434,7 @@ void cWseqRefined(const Topology& topology,Routes& routes){
     computeSaveList(saveTableBackhaul,saveListBackhaul);
 
     //Processo del passo base
-    Route tmpRoute = Route(topology.getCapacity(),0);
+    Drawable_route tmpRoute = Drawable_route(topology.getCapacity(),0);
     size_t lastNodeAdded;
     std::array<size_t,2> nodeCouple;
     bool hasNotFailed;
@@ -445,7 +445,7 @@ void cWseqRefined(const Topology& topology,Routes& routes){
 
     for (int i=0;i<topology.getVehicle_num();i++) {
 
-        tmpRoute = Route(topology.getCapacity(),i);
+        tmpRoute = Drawable_route(topology.getCapacity(),i);
 
         //Richiama la capacità standard di un veicolo
 
@@ -537,7 +537,7 @@ void cWseqRefined(const Topology& topology,Routes& routes){
 
         tmpRoute.addLinehaul(topology.getLinehaulNodes()[0]);
 
-        routes.addRoute(tmpRoute);
+        routes.push_back(tmpRoute);
     }
 
     //writeOnFile(routes,topology.getNode_num());
@@ -546,7 +546,7 @@ void cWseqRefined(const Topology& topology,Routes& routes){
 
 //CW sequenziale raw schizzinoso che aggiunge due coppie agli ultimi veicoli rimasti
 
-void cWseqRaw(const Topology& topology,Routes& routes){
+void cWseqRaw(const Topology& topology,std::vector<Drawable_route>& routes){
 
     size_t nNodesLinehaul=topology.getLinehaulNodes().size();
 
@@ -578,7 +578,7 @@ void cWseqRaw(const Topology& topology,Routes& routes){
     computeSaveList(saveTableBackhaul,saveListBackhaul);
 
     //Processo del passo base
-    Route tmpRoute = Route(topology.getCapacity(),0);
+    Drawable_route tmpRoute = Drawable_route(topology.getCapacity(),0);
     size_t lastNodeAdded;
     std::array<size_t,2> nodeCouple;
     bool hasNotFailed;
@@ -589,7 +589,7 @@ void cWseqRaw(const Topology& topology,Routes& routes){
 
     for (int i=0;i<topology.getVehicle_num();i++) {
 
-        tmpRoute = Route(topology.getCapacity(),i);
+        tmpRoute = Drawable_route(topology.getCapacity(),i);
 
         //Richiama la capacità standard di un veicolo
 
@@ -681,14 +681,14 @@ void cWseqRaw(const Topology& topology,Routes& routes){
 
         tmpRoute.addLinehaul(topology.getLinehaulNodes()[0]);
 
-        routes.addRoute(tmpRoute);
+        routes.push_back(tmpRoute);
     }
 
     //writeOnFile(routes,topology.getNode_num());
 
 }
 
-void cWseqBoh(const Topology& topology,Routes& routes){
+void cWseqBoh(const Topology& topology,std::vector<Drawable_route>& routes){
 
     size_t nNodesLinehaul=topology.getLinehaulNodes().size();
 
@@ -720,7 +720,7 @@ void cWseqBoh(const Topology& topology,Routes& routes){
     computeSaveList(saveTableBackhaul,saveListBackhaul);
 
     //Processo del passo base
-    Route tmpRoute = Route(topology.getCapacity(),0);
+    Drawable_route tmpRoute = Drawable_route(topology.getCapacity(),0);
     size_t lastNodeAdded;
     std::array<size_t,2> nodeCouple;
     bool hasNotFailed;
@@ -731,7 +731,7 @@ void cWseqBoh(const Topology& topology,Routes& routes){
 
     for (int i=0;i<topology.getVehicle_num();i++) {
 
-        tmpRoute = Route(topology.getCapacity(),i);
+        tmpRoute = Drawable_route(topology.getCapacity(),i);
 
         //Richiama la capacità standard di un veicolo
 
@@ -805,10 +805,10 @@ void cWseqBoh(const Topology& topology,Routes& routes){
 
         tmpRoute.addLinehaul(topology.getLinehaulNodes()[0]);
 
-        routes.addRoute(tmpRoute);
+        routes.push_back(tmpRoute);
     }
 
-    writeOnFile(routes,topology.getNode_num());
+    //writeOnFile(routes,topology.getNode_num());
 
 }
 

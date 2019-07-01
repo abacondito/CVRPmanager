@@ -43,7 +43,6 @@ private:
 
     //Declare your private attributes here
     /********************************************************************************************************************/
-    Drawable_routes routes;
     std::vector<Drawable_route> singleRoutes;
     /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
 
