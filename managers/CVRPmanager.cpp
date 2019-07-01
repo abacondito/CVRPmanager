@@ -391,7 +391,7 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
             name += "_cWseqRaw_test";
             break;
         case(2):
-            cWpar2(topology,this->singleRoutes);
+            cWpar(topology,this->singleRoutes);
             name += "_cWpar_test";
             break;
         /*case(3):
