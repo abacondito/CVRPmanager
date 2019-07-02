@@ -483,17 +483,22 @@ void cWseqRefined(const Topology& topology,std::vector<Drawable_route>& routes){
 
         lastNodeAdded = tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
 
+
+        //passo intermedio standard
         /*
-        //aggiungo il backhaul ottimale dato l'ultimo linehaul aggiunto
         size_t best = findBestBackhaulSuccessorFromLinehaul
                 (topology.getLinehaulNodes()[lastNodeAdded],topology.getBackhaulNodes(),saveListBackhaul);
         if(best != 0){
             tmpRoute.addBackhaul(topology.getBackhaulNodes()[best]);
         }*/
+        //fine passo intermedio standard
 
+        //inizio passo intermedio con inversione
         std::vector<Node> tmpNodes = topology.getBackhaulNodes();
 
         gyakuKeiroNoJutsu(tmpRoute,tmpNodes,saveListBackhaul);
+
+        //fine passo intermedio con inversione
 
         eraseFromSaveListByItem(saveListLinehaul, lastNodeAdded);
 
@@ -627,6 +632,7 @@ void cWseqRaw(const Topology& topology,std::vector<Drawable_route>& routes){
 
         lastNodeAdded = tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
 
+        //inizio passo intermedio standard
         /*
         //aggiungo il backhaul ottimale dato l'ultimo linehaul aggiunto
         size_t best = findBestBackhaulSuccessorFromLinehaul
@@ -634,10 +640,16 @@ void cWseqRaw(const Topology& topology,std::vector<Drawable_route>& routes){
         if(best != 0){
             tmpRoute.addBackhaul(topology.getBackhaulNodes()[best]);
         }*/
+        //fine passo intermedio standard
+
+
+        //inizio passo intermedio con inversione
 
         std::vector<Node> tmpNodes = topology.getBackhaulNodes();
 
         gyakuKeiroNoJutsu(tmpRoute,tmpNodes,saveListBackhaul);
+
+        //fine passo intermedio con inversione
 
         eraseFromSaveListByItem(saveListLinehaul, lastNodeAdded);
 
@@ -684,9 +696,13 @@ void cWseqRaw(const Topology& topology,std::vector<Drawable_route>& routes){
         routes.push_back(tmpRoute);
     }
 
+    //adjustLinehauls(routes,topology);
+
     //writeOnFile(routes,topology.getNode_num());
 
 }
+
+//CW senza vincoli,per prova
 
 void cWseqBoh(const Topology& topology,std::vector<Drawable_route>& routes){
 

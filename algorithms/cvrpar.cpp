@@ -362,7 +362,7 @@ void cWpar(const Topology& topology,std::vector<Drawable_route>& tmpRoutes){
             if(hasFinshedLinehaul[k] && mustDoIntermediatePass[k]){
 
                 lastNodeAdded = tmpRoutes[k].getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
-
+                //passo intermedio standard
                 /*size_t best = findBestBackhaulSuccessorFromLinehaulPar
                         (topology.getLinehaulNodes()[lastNodeAdded],topology.getBackhaulNodes(),tmpRoutes,saveListBackhaul);
                 if(best != 0){
@@ -374,7 +374,9 @@ void cWpar(const Topology& topology,std::vector<Drawable_route>& tmpRoutes){
                     tmpRoutes[k].addLinehaul(topology.getLinehaulNodes()[0]);
                     finishedRoutes++;
                 }*/
+                //fine passo intermedio standard
 
+                //inizio passo intermedio con inversione
                 std::vector<Node> tmpNodes = topology.getBackhaulNodes();
 
                 if(gyakuKeiroNoJutsuPar(tmpRoutes[k],tmpNodes,tmpRoutes,saveListBackhaul)){
@@ -385,6 +387,7 @@ void cWpar(const Topology& topology,std::vector<Drawable_route>& tmpRoutes){
                     tmpRoutes[k].addLinehaul(topology.getLinehaulNodes()[0]);
                     finishedRoutes++;
                 }
+                //fine passo intermedio con inversione
 
                 eraseFromSaveListByItem(saveListLinehaul, lastNodeAdded);
 
@@ -414,7 +417,7 @@ void cWpar(const Topology& topology,std::vector<Drawable_route>& tmpRoutes){
         k = ++k % topology.getVehicle_num();
     }
 
-    //writeOnFile(routes,topology.getNode_num());
+    adjustLinehauls(tmpRoutes,topology);
 
 }
 
@@ -468,8 +471,6 @@ void cWpar2(const Topology& topology,std::vector<Drawable_route>& tmpRoutes){
     size_t nodeIndex2;
     Node node1;
     Node node2;
-    size_t nodeLeftBehindL = 0;
-    size_t nodeLeftBehindB = 0;
 
     //inizializzo le route con le coppie di linehaul con il saving maggiore
 
@@ -600,7 +601,4 @@ void cWpar2(const Topology& topology,std::vector<Drawable_route>& tmpRoutes){
 
         k = ++k % topology.getVehicle_num();
     }
-
-    //writeOnFile(routes,topology.getNode_num());
-
 }

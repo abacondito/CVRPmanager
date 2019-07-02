@@ -74,9 +74,24 @@ void Route::setMax_capacity(double value)
     max_capacity = value;
 }
 
+//calcola il costo totale della route e lo restituisce
 double Route::getTotCost() const
 {
-    return totCost;
+    double totCost = 0.0;
+    Node previousNode = this->nodes.front();
+    for (size_t i = 1;i<this->nodes.size();i++) {
+        Node currentNode = this->nodes.at(i);
+        totCost += previousNode.getCoordinates().dist(currentNode.getCoordinates());
+        previousNode = currentNode;
+    }
+
+    return  totCost;
+}
+
+void Route::setNodeAtIndex(size_t index,Node& newNode){
+    this->current_capacity_linehaul += this->nodes[index].getDelivery();
+    this->current_capacity_linehaul -= newNode.getDelivery();
+    this->nodes[index] = newNode;
 }
 
 double Route::getCurrent_capacity_linehaul() const

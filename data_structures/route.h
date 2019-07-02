@@ -21,7 +21,7 @@ public:
     double getMax_capacity() const;
     void setMax_capacity(double value);
 
-
+    void setNodeAtIndex(size_t index,Node& newNode);
 
     double getTotCost() const;
 

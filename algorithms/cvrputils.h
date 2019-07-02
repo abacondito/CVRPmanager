@@ -6,6 +6,7 @@
 #include <vector>
 #include <data_structures/routes.h>
 #include <drawable_objects/drawable_route.h>
+#include <data_structures/topology.h>
 #include <list>
 #include <iostream>
 #include <fstream>
@@ -18,5 +19,6 @@ void writeOnFile(/*Routes& routes*/std::vector<Drawable_route>& routes,int nNode
 void writeOnExistingFile(/*Routes& routes*/std::vector<Drawable_route>& routes,int nNodes,std::string& path);
 std::array<size_t,2> getMaxIndexes(cg3::Array2D<double> matrix);
 void eraseFromSaveListByItem(std::list<std::array<size_t,2>>& saveList,size_t index);
+void adjustLinehauls(std::vector<Drawable_route>& routes,const Topology& topology);
 
 #endif // CVRPUTILS_H

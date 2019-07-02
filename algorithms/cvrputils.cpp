@@ -49,6 +49,116 @@ void computeSaveList(cg3::Array2D<double>& saveTable, std::list<std::array<size_
 
 }
 
+//controlla se tutti i linehaul sono nelle route,altrimenti forza i rimanenti al loro interno
+
+void adjustLinehauls(std::vector<Drawable_route>& routes,const Topology& topology){
+
+    std::vector<Node> linehauls = topology.getLinehaulNodes();
+    int nNodes = linehauls.size();
+
+    //vettore per verificare la presenza di tutti i nodi
+    bool isPresent[nNodes];
+    //lo inizializzo a false
+    for (size_t i = 0;i < nNodes;i++) {
+        isPresent[i] = false;
+    }
+    //imposto la presenza della partenza a true
+    isPresent[0] = true;
+
+    //scorro i linehaul delle route,per ognuno imposto la sua presenza a true
+    for (size_t i = 0; i< routes.size();i++) {
+        size_t j = 1;
+        while(j<routes[i].getRouteSize() && routes[i].getNodeByIndex(j).getDelivery() > 0){
+            size_t linehaulIndex = routes[i].getNodeByIndex(j).getIndex() - (topology.getBackhaulNodes().size()-1);
+            isPresent[linehaulIndex] = true;
+            j++;
+        }
+    }
+
+    //vettore che conterrà gli indici dei nodi mancanti
+    std::vector<size_t> missingNodes;
+
+    //scorro il vettore delle presenze e se un nodo manca lo metto nell'array dei mancanti
+    for (size_t i = 0;i < nNodes;i++) {
+        if(isPresent[i] == false){
+            missingNodes.push_back(i);
+        }
+    }
+    //se alcuni nodi non sono stati inseriti:
+    if(missingNodes.size() > 0){
+
+        bool hasBeenInserted;
+        //scorro i nodi mancanti
+        for (size_t m = 0;m<missingNodes.size();m++) {
+            //l'attuale nodo mancante
+            Node missingNode = linehauls[missingNodes[m]];
+
+            hasBeenInserted = false;
+
+            //scorro tutti i nodi nelle route
+            size_t i = 0;
+            while(i< routes.size() && !hasBeenInserted){
+                size_t j = 1;
+                while(j<routes[i].getRouteSize() && routes[i].getNodeByIndex(j).getDelivery() > 0 && !hasBeenInserted){
+
+                    Node currentNode = routes[i].getNodeByIndex(j);
+
+                    double tmpCapacity = routes[i].getCurrent_capacity_linehaul();
+                    /*controllo se il nodo mancante ha un delivery maggiore del nodo corrente e se posso sostituirli
+                    senza superare la capacità massima*/
+                    if(currentNode.getDelivery() < missingNode.getDelivery() &&
+                            (tmpCapacity - missingNode.getDelivery() + currentNode.getDelivery() >= 0))
+                    {
+
+                        //controllo per tutte le route diversa da quella in cui vorrei scambiare il nodo corrente con il nodo mancante
+                        size_t x = 0;
+                        while (x<routes.size() && !hasBeenInserted){
+                            if(x != i){
+                                //se è possibile aggiungere alla rotta il valore del nodo corrente
+                                if(routes[x].getCurrent_capacity_linehaul() - currentNode.getDelivery() >= 0){
+                                    //scambio il nodo corrente con il nodo mancante nella route i
+                                    routes[i].setNodeAtIndex(j,missingNode);
+                                    //reinserisco il nodo corrente estratto dalla route i nella route x
+                                    //creo una nuova route uguale alla vecchia ma aggiungendo il nodo corrente
+                                    Drawable_route newRoute = Drawable_route(routes[0].getMax_capacity(),x);
+
+                                    size_t lastLinehaul = 0;
+
+                                    for (size_t z = 1;z<routes[x].getRouteSize();z++) {
+                                        if(lastLinehaul == 0 && routes[x].getNodeByIndex(z).getDelivery() == 0){
+                                            lastLinehaul = z -1;
+                                        }
+                                    }
+
+                                    for (size_t z = 0;z<routes[x].getRouteSize();z++) {
+                                        if(z<=lastLinehaul){
+                                            newRoute.addLinehaul(routes[x].getNodeByIndex(z));
+                                            if(z==lastLinehaul){
+                                                newRoute.addLinehaul(currentNode);
+                                            }
+                                        }
+                                        else{
+                                            newRoute.addBackhaul(routes[x].getNodeByIndex(z));
+                                        }
+                                    }
+                                    //il nodo è stato inserito
+                                    routes[x] = newRoute;
+                                    hasBeenInserted = true;
+                                }
+                            }
+                            x++;
+                        }
+
+
+                    }
+                    j++;
+                }
+                i++;
+            }
+        }
+    }
+}
+
 void writeOnFile(std::vector<Drawable_route>& routes,int nNodes){
 
     std::ofstream myfile ("TestRoutes.txt");
