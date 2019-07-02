@@ -696,7 +696,7 @@ void cWseqRaw(const Topology& topology,std::vector<Drawable_route>& routes){
         routes.push_back(tmpRoute);
     }
 
-    //adjustLinehauls(routes,topology);
+    adjustLinehauls(routes,topology);
 
     //writeOnFile(routes,topology.getNode_num());
 
