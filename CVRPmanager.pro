@@ -70,6 +70,9 @@ HEADERS += \
     managers/CVRPmanager.h \
     utils/fileutils.h
 
+RESOURCES += \
+    pics.qrc
+
 
 
 

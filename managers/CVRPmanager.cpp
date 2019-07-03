@@ -54,13 +54,10 @@ const cg3::Pointd SCENECENTER(0,0,0);
 CVRPmanager::CVRPmanager(QWidget *parent) :
     QFrame(parent),
     ui(new Ui::CVRPmanager),
-    mainWindow(static_cast<cg3::viewer::MainWindow&>(*parent)),
-    boundingBox(cg3::Point2Dd(-BOUNDINGBOX, -BOUNDINGBOX),
-                cg3::Point2Dd(BOUNDINGBOX, BOUNDINGBOX))
+    mainWindow(static_cast<cg3::viewer::MainWindow&>(*parent))
 {
     //UI setup
     ui->setupUi(this);
-    connect(&mainWindow, SIGNAL(point2DClicked(cg3::Point2Dd)), this, SLOT(point2DClicked(cg3::Point2Dd)));
 
     //Setting options for the canvas
     mainWindow.disableRotation();
@@ -134,39 +131,43 @@ CVRPmanager::~CVRPmanager() {
  * Note that the vector could contain duplicates.
  * @param[in] points Vector of points
  */
-void CVRPmanager::computeDelaunayTriangulation(const std::vector<cg3::Point2Dd>& inputPoints) {
+void CVRPmanager::computeCvrpAlgorithm(const Topology& topology) {
     //Launch your Delaunay triangulation algorithm here on the vector "inputPoints" in input
     //(note that the vector could contain duplicates!!).
     //Here you should call an algorithm (obviously defined in ANOTHER FILE!) which
     //fills your output Triangulation data structure.
     /********************************************************************************************************************/
 
+    int selected = this->ui->selectVersion->currentIndex();
+
+    switch(selected)
+    {
+    case(0):
+        cWseqRefined(topology,this->singleRoutes);
+        break;
+    case(1):
+        cWseqRaw(topology,this->singleRoutes);
+        break;
+    case(2):
+        cWseqUltimate(topology,this->singleRoutes);
+        break;
+    case(3):
+        cWpar(topology,this->singleRoutes);
+        break;
+    }
     /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
 
     /********************************************************************************************************************/
-    CG3_SUPPRESS_WARNING(inputPoints);
 }
 
-/**
- * @brief Launch incremental algorithm on a Delaunay Triangulation given a point
- * @param p Point clicked
- */
-void CVRPmanager::addPointToDelaunayTriangulation(const cg3::Point2Dd& p) {
-    //Here you have to launch the incremental algorithm for the insertion of a new single point into the current triangulation.
-    /********************************************************************************************************************/
-
-    /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
-
-    /********************************************************************************************************************/
-    CG3_SUPPRESS_WARNING(p);
-}
 
 /**
  * @brief Clear data of the Delaunay Triangulation
  */
-void CVRPmanager::clearDelaunayTriangulation() {
+void CVRPmanager::clearRoutes() {
     //Clear here your Delaunay Triangulation data structure.
     /********************************************************************************************************************/
+    eraseDrawnRoutes();
     this->singleRoutes.clear();
     /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
 
@@ -178,7 +179,7 @@ void CVRPmanager::clearDelaunayTriangulation() {
 /**
  * @brief Draw the Delaunay Triangulation in the canvas
  */
-void CVRPmanager::drawDelaunayTriangulation() {
+void CVRPmanager::drawRoutes() {
     //Note that you could keep a Drawable Delaunay Triangulation object always
     //rendered (even when it is empty), instead of deleting it from the main
     //window and re-draw it again.
@@ -212,7 +213,7 @@ void CVRPmanager::drawDelaunayTriangulation() {
 /**
  * @brief Erase drawn Delaunay Triangulation from the canvas
  */
-void CVRPmanager::eraseDrawnDelaunayTriangulation() {
+void CVRPmanager::eraseDrawnRoutes() {
     //Note that you could keep a Drawable Delaunay Triangulation object always
     //rendered (even when it is empty), instead of deleting it from the main
     //window and re-draw it again.
@@ -242,49 +243,6 @@ void CVRPmanager::eraseDrawnDelaunayTriangulation() {
     //Canvas update
     mainWindow.updateGlCanvas();
 }
-
-/**
- * @brief Set whether or not the bounding triangle is visible
- * @param visible True if the bounding box is set to be visible, false otherwise
- */
-void CVRPmanager::setVisibilityBoundingTriangle(const bool visible)
-{
-    //Set the visibility of your bounding triangle here
-    /********************************************************************************************************************/
-
-    /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
-
-    /********************************************************************************************************************/
-    CG3_SUPPRESS_WARNING(visible);
-}
-
-/**
- * @brief Check if the current triangulation is a Delaunay Triangulation
- */
-void CVRPmanager::checkTriangulation() {
-	std::vector<cg3::Point2Dd> points;
-    cg3::Array2D<unsigned int> triangles;
-
-    //Get your triangulation here and save the data in the vector of
-    //points and in the matrix of triangles (respectively "points" and
-    //"triangles").
-    //"points" is a vector which contains all the points of the triangulation.
-    //"triangle" is a 2D matrix with n rows (n = number of triangles) and
-    //3 columns.
-    //The i-th row represents the i-th triangle, which is composed of three
-    //unsigned integers which are the indices of the points in the vector
-    //"points" that are the vertices to the i-th triangle. 
-	//Note that the points of each triangle must be in COUNTER-CLOCKWISE order.
-    //You should initially resize (for efficiency reasons) the matrix "triangles" 
-	//by calling "triangles.resize(n, 3)", and then fill the matrix using the
-    //assignment operator: "triangles(i,j) = a"; 
-    /********************************************************************************************************************/
-
-    /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
-
-    /********************************************************************************************************************/
-}
-
 
 
 //Define your private methods here if you need some
@@ -319,7 +277,7 @@ void CVRPmanager::checkTriangulation() {
  * on the input points (a vector) of this manager and measure
  * its time efficiency.
  */
-void CVRPmanager::launchAlgorithmAndMeasureTime() { //Do not write code here
+void CVRPmanager::launchAlgorithmAndMeasureTime(const Topology& topology) { //Do not write code here
     //Output message
     //std::cout << "Executing the algorithm for " << this->points.size() << " points..." << std::endl;
 
@@ -327,7 +285,7 @@ void CVRPmanager::launchAlgorithmAndMeasureTime() { //Do not write code here
     cg3::Timer t("Computing cvrp");
 
     //Launch delaunay algorithm on the vector of input points
-    computeDelaunayTriangulation(this->points);
+    computeCvrpAlgorithm(topology);
 
     //Timer stop and visualization (both on console and UI)
     t.stopAndPrint();
@@ -354,7 +312,7 @@ void CVRPmanager::fitScene() { //Do not write code here
  *
  * Load input points from a file.
  */
-void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
+void CVRPmanager::on_loadFilePushButton_clicked() { //Do not write code here
     //File selector
     QString filename = QFileDialog::getOpenFileName(nullptr,
                        "Open points",
@@ -364,10 +322,10 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
     if (!filename.isEmpty()) {
 
         //Delete from the canvas the Delaunay Triangulation
-        eraseDrawnDelaunayTriangulation();
+        eraseDrawnRoutes();
 
         //Clear current data
-        clearDelaunayTriangulation();
+        clearRoutes();
 
         //Load input points in the vector (deleting the previous ones)
         //this->points = FileUtils::getPointsFromFile(filename.toStdString());
@@ -376,6 +334,7 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
 
         Topology topology = FileUtils::getTopologyFromFile(filename.toStdString());
 
+
         //Launch the algorithm on the current vector of points and measure
         //its efficiency with a timer
         int selected = this->ui->selectVersion->currentIndex();
@@ -383,31 +342,27 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
         switch(selected)
         {
         case(0):
-            cWseqRefined(topology,this->singleRoutes);
             name += "_cWseqRefined_test";
             break;
         case(1):
-            cWseqRaw(topology,this->singleRoutes);
             name += "_cWseqRaw_test";
             break;
         case(2):
-            cWseqUltimate(topology,this->singleRoutes);
             name += "_cWseqMastered_test";
             break;
         case(3):
-            cWpar(topology,this->singleRoutes);
             name += "_cWpar_test";
             break;
         }
 
-        std::ofstream myfile (name);
+        //std::ofstream myfile (name);
+
+        launchAlgorithmAndMeasureTime(topology);
 
         writeOnExistingFile(this->singleRoutes,topology.getNode_num(),name);
 
-        launchAlgorithmAndMeasureTime();
-
         //Draw Delaunay Triangulation
-        drawDelaunayTriangulation();
+        drawRoutes();
     }
 }
 
@@ -416,67 +371,19 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
  *
  * It allows us to clear our Delaunay Triangulation input points.
  */
-void CVRPmanager::on_clearPointsPushButton_clicked() { //Do not write code here
-    //Clear the vector of points
-    this->points.clear();
-
+void CVRPmanager::on_clearRoutesPushButton_clicked() { //Do not write code here
     //Clear current data
-    clearDelaunayTriangulation();
+    clearRoutes();
 
     //Delete from the canvas the Delaunay Triangulation
-    eraseDrawnDelaunayTriangulation();
+    eraseDrawnRoutes();
 
     //Clear timer data
 
     ui->timeLabel->setText("");
 }
 
-
-
-
-/**
- * @brief Point 2D clicked handler.
- *
- * This method is called whenever the user clicks the canvas.
- * The coordinates (x and y) of the clicked point are given by
- * the 2D point p.
- *
- * @param[in] p Point clicked
- */
-void CVRPmanager::point2DClicked(const cg3::Point2Dd& p) { //Do not write code here
-    if (!boundingBox.isInside(p)) {
-        //Error message if the point is not inside the bounding box
-        QMessageBox::warning(this, "Cannot insert point", "Point [" +
-                             QString::number(p.x()) + "," + QString::number(p.y()) +
-                             "] is not contained in the bounding box.");
-        return;
-    }
-    else {
-        addPointToDelaunayTriangulation(p);
-    }
-}
-
-
-
-
 /* ----- UI slots for utilities ----- */
-
-/**
- * @brief Enable picking checkbox handler.
- *
- * Checkbox to enable/disable the point clicking on the canvas.
- *
- * @param[in] arg1 It contains Qt::Checked if the checkbox is checked,
- * Qt::Unchecked otherwise
- */
-void CVRPmanager::on_enablePickingCheckBox_stateChanged(int arg1) { //Do not write code here
-    if (arg1 == Qt::Checked){
-        mainWindow.setSelectLeftButton();
-    }
-    else {
-        mainWindow.disableRotation();
-    }
-}
 
 /**
  * @brief Reset scene event handler.
@@ -486,54 +393,4 @@ void CVRPmanager::on_enablePickingCheckBox_stateChanged(int arg1) { //Do not wri
  */
 void CVRPmanager::on_resetScenePushButton_clicked() { //Do not write code here
     fitScene();
-}
-
-/**
- * @brief Generate random points handler.
- *
- * With this button we can generate files that contains
- * points which are inside the bounding box.
- */
-void CVRPmanager::on_generatePointsFilePushButton_clicked() { //Do not write code here
-    QString selectedFilter;
-    QString filename = QFileDialog::getSaveFileName(nullptr,
-                       "File containing points",
-                       ".",
-                       "TXT(*.txt)", &selectedFilter);
-
-    if (!filename.isEmpty()){
-        int number = QInputDialog::getInt(
-                    this,
-                    tr("Generate file"),
-                    tr("Number of random points:"), 1000, 0, 1000000000, 1);
-
-        //Generate points and save them in the chosen file
-        FileUtils::generateRandomPointFile(filename.toStdString(), BOUNDINGBOX, number);
-    }
-}
-
-
-/**
- * @brief Check triangulation event handler.
- *
- * It allows us to check if the triangulation is a Delaunay one.
- */
-void CVRPmanager::on_checkTriangulationPushButton_clicked() {
-	checkTriangulation();
-}
-
-/**
- * @brief Show bounding triangle checkbox event handler.
- *
- * It allows us to choose if bounding triangle should be drawn or not.
- *
- * @param[in] arg1 It contains Qt::Checked if the checkbox is checked,
- * Qt::Unchecked otherwise
- */
-void CVRPmanager::on_showBoundingTriangleCheckBox_stateChanged(int arg1) {
-    //If arg1 is Qt::Checked, then you must set the drawable triangulation
-    //to draw the bounding triangle as well
-    setVisibilityBoundingTriangle(arg1 == Qt::Checked);
-
-    mainWindow.updateGlCanvas(); //Canvas update
 }

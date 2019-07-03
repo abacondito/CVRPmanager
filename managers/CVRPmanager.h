@@ -7,6 +7,8 @@
 
 #include <cg3/viewer/drawable_objects/2d/drawable_bounding_box2d.h>
 
+#include <data_structures/topology.h>
+
 #include <drawable_objects/drawable_routes.h>
 #include <drawable_objects/drawable_route.h>
 
@@ -34,13 +36,6 @@ private:
     Ui::CVRPmanager *ui;
     cg3::viewer::MainWindow& mainWindow;    
 
-    //It is const because, once defined and initialized, it will never change!
-    const cg3::DrawableBoundingBox2D boundingBox;
-
-    //Vector of points (the input of the algorithm)
-    std::vector<cg3::Point2Dd> points;
-
-
     //Declare your private attributes here
     /********************************************************************************************************************/
     std::vector<Drawable_route> singleRoutes;
@@ -53,19 +48,13 @@ private:
 
     /* ----- Private main methods ----- */
 
-    void computeDelaunayTriangulation(const std::vector<cg3::Point2Dd>& points);
-    void addPointToDelaunayTriangulation(const cg3::Point2Dd& p);
+    void computeCvrpAlgorithm(const Topology& topology);
 
-    void clearDelaunayTriangulation();
+    void clearRoutes();
 
-    void drawDelaunayTriangulation();
-    void eraseDrawnDelaunayTriangulation();
+    void drawRoutes();
+    void eraseDrawnRoutes();
 	
-    void setVisibilityBoundingTriangle(const bool visible);
-
-	void checkTriangulation();
-
-
     //Declare your private methods here if you need some
     /********************************************************************************************************************/
 
@@ -89,30 +78,21 @@ private:
     /* ----- Private utility methods ----- */
 
     void fitScene();
-    void launchAlgorithmAndMeasureTime();
+    void launchAlgorithmAndMeasureTime(const Topology& topology);
 
 
 private slots:
 
     /* ----- UI slots for loading points ----- */
 
-    void on_loadPointsPushButton_clicked();
-    void on_clearPointsPushButton_clicked();
-
-    void point2DClicked(const cg3::Point2Dd& p);
+    void on_loadFilePushButton_clicked();
+    void on_clearRoutesPushButton_clicked();
 
 
 
     /* ----- UI slots for utilities ----- */
 
-    void on_enablePickingCheckBox_stateChanged(int arg1);
     void on_resetScenePushButton_clicked();
-
-    void on_generatePointsFilePushButton_clicked();	
-	
-    void on_checkTriangulationPushButton_clicked();
-
-    void on_showBoundingTriangleCheckBox_stateChanged(int arg1);
 };
 
 #endif // CVRPMANAGER_H

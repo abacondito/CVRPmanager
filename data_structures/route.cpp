@@ -52,8 +52,8 @@ void Route::addStartingPoint(Node& startingPoint){
     this->nodes.push_back(startingPoint);
 }
 
-Node& Route::getLastNode(){
-    this->nodes[nodes.size()-1];
+Node& Route::getLastNode(){   
+    return this->nodes[nodes.size()-1];
 }
 
 Node& Route::getNodeByIndex(size_t index){
