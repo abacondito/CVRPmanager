@@ -391,13 +391,13 @@ void CVRPmanager::on_loadPointsPushButton_clicked() { //Do not write code here
             name += "_cWseqRaw_test";
             break;
         case(2):
+            cWseqUltimate(topology,this->singleRoutes);
+            name += "_cWseqMastered_test";
+            break;
+        case(3):
             cWpar(topology,this->singleRoutes);
             name += "_cWpar_test";
             break;
-        /*case(3):
-            name += "cWboh";
-            cWseqBoh(topology,routes);
-            break;*/
         }
 
         std::ofstream myfile (name);

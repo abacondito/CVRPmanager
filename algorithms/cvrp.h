@@ -16,13 +16,12 @@
 
 bool gyakuKeiroNoJutsu(Route& route,std::vector<Node>& backhauls,std::list<std::array<size_t,2>>& saveBackhaulList);
 
-void cWseqTresh(const Topology& topology,std::vector<Drawable_route>& routes);
+void ultimateGyakuKeiroNoJutsu(Route& routeLinehaul,Route& routeBackhaul,Route& finalRoute);
 
 void cWseqRefined(const Topology& topology,std::vector<Drawable_route>& routes);
 
 void cWseqRaw(const Topology& topology,std::vector<Drawable_route>& routes);
 
-void cWseqBoh(const Topology& topology,std::vector<Drawable_route>& routes);
-
+void cWseqUltimate(const Topology& topology,std::vector<Drawable_route>& routes);
 
 #endif // CVRP_H

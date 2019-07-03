@@ -108,6 +108,76 @@ bool gyakuKeiroNoJutsu(Route& route,std::vector<Node>& backhauls,std::list<std::
     return false;
 }
 
+void ultimateGyakuKeiroNoJutsu(Route& routeLinehaul,Route& routeBackhaul,Route& finalRoute){
+
+    if(routeBackhaul.getRouteSize() > 1){
+        std::vector<double> savings;
+        Node candidateLinehauls[2];
+        Node candidateBackhauls[2];
+
+        double distLinehaulBackhaul, distLinehaulFromStart, distBackhaulFromStart;
+
+        candidateLinehauls[0] = routeLinehaul.getNodeByIndex(1);
+        candidateLinehauls[1] = routeLinehaul.getLastNode();
+        candidateBackhauls[0] = routeBackhaul.getNodeByIndex(1);
+        candidateBackhauls[1] = routeBackhaul.getLastNode();
+
+        for (size_t i = 0;i<2;i++) {
+            Node currentLinehaul = candidateLinehauls[i];
+            for (size_t j = 0;j<2;j++) {
+                Node currentBackhaul = candidateBackhauls[j];
+
+                distLinehaulBackhaul = currentLinehaul.getCoordinates().dist(currentBackhaul.getCoordinates());
+                distLinehaulFromStart = currentLinehaul.getCoordinates().dist(routeLinehaul.getNodeByIndex(0).getCoordinates());
+                distBackhaulFromStart = currentBackhaul.getCoordinates().dist(routeLinehaul.getNodeByIndex(0).getCoordinates());
+
+                savings.push_back(distBackhaulFromStart + distLinehaulFromStart - distLinehaulBackhaul);
+            }
+        }
+
+        double tmpMaxSaving = 0.0;
+        int bestCouple = 0;
+
+        for (size_t i = 0;i<savings.size();i++) {
+            if(savings[i] > tmpMaxSaving){
+                tmpMaxSaving = savings[i];
+                bestCouple = i;
+            }
+        }
+
+
+
+        switch (bestCouple) {
+            case(0):
+            routeLinehaul.reverse();
+            break;
+
+            case(1):
+            routeLinehaul.reverse();
+            routeBackhaul.reverse();
+            break;
+
+            case(2):
+            break;
+
+            case(3):
+            routeBackhaul.reverse();
+            break;
+        }
+
+    }
+
+
+    for (size_t i = 0;i<routeLinehaul.getRouteSize();i++) {
+        finalRoute.addLinehaul(routeLinehaul.getNodeByIndex(i));
+    }
+
+    for (size_t i = 1;i<routeBackhaul.getRouteSize();i++) {
+        finalRoute.addBackhaul(routeBackhaul.getNodeByIndex(i));
+    }
+
+}
+
 
 
 
@@ -216,188 +286,6 @@ bool addBestAdjacentNodeByIndexOptimized(const std::vector<Node>& nodeList,std::
     }
     //non ho trovato l'indice,restituisco fallimento
     return false;
-}
-
-//CW sequenziale che usa una soglia
-
-
-void cWseqTresh(const Topology& topology,std::vector<Drawable_route>& routes){
-    int threshold=(topology.getLinehaulNodes().size()-1)/(topology.getVehicle_num());
-    int module = (topology.getLinehaulNodes().size()-1)%(topology.getVehicle_num());
-
-    size_t nNodesLinehaul=topology.getLinehaulNodes().size();
-
-    //inizializzo tabella distanze Linehaul
-    cg3::Array2D<double> distTableLinehaul = cg3::Array2D<double>(nNodesLinehaul,nNodesLinehaul,0.0);
-    computeDistTable(topology.getLinehaulNodes(),distTableLinehaul);
-
-    //inizializzo tabella savings Linehaul
-    cg3::Array2D<double> saveTableLinehaul = cg3::Array2D<double>(nNodesLinehaul,nNodesLinehaul,0.0);
-    computeSaveTable(distTableLinehaul, saveTableLinehaul);
-
-    //inizializzo lista ordinata savings Linehaul
-    std::list<std::array<size_t,2>> saveListLinehaul;
-    computeSaveList(saveTableLinehaul,saveListLinehaul);
-
-
-    size_t nNodesBackhaul=topology.getBackhaulNodes().size();
-
-    //inizializzo tabella distanze Backhaul
-    cg3::Array2D<double> distTableBackhaul = cg3::Array2D<double>(nNodesBackhaul,nNodesBackhaul,0.0);
-    computeDistTable(topology.getBackhaulNodes(),distTableBackhaul);
-
-    //inizializzo tabella distanze Backhaul
-    cg3::Array2D<double> saveTableBackhaul = cg3::Array2D<double>(nNodesBackhaul,nNodesBackhaul,0.0);
-    computeSaveTable(distTableBackhaul, saveTableBackhaul);
-
-    //inizializzo tabella distanze Backhaul
-    std::list<std::array<size_t,2>> saveListBackhaul;
-    computeSaveList(saveTableBackhaul,saveListBackhaul);
-
-    //Processo del passo base
-    Drawable_route tmpRoute = Drawable_route(topology.getCapacity(),0);
-    size_t lastNodeAdded;
-    std::array<size_t,2> nodeCouple;
-    bool hasNotFailed;
-
-    int unassignedLinehaulsNodes = topology.getLinehaulNodes().size() -1;
-
-    size_t nodeLeftBehindL = 0;
-    size_t nodeLeftBehindB = 0;
-
-
-
-    for (int i=0;i<topology.getVehicle_num();i++) {
-
-        int tmpThresh = threshold;
-        //int tmpModuleThresh = module;
-
-        tmpRoute = Drawable_route(topology.getCapacity(),i);
-
-        //Richiama la capacità standard di un veicolo
-
-        //Inserimento del magazzino base all'interno della route
-        tmpRoute.addStartingPoint(topology.getLinehaulNodes()[0]);
-        //Le righe di sopra vanno inserite in bootRoute()
-
-
-        if(saveListLinehaul.size() > 0){
-
-            //aggiungo alla route i primi due Linehaul con il saving più alto
-            nodeCouple = saveListLinehaul.front();
-            saveListLinehaul.erase(saveListLinehaul.begin());
-            tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[0]]);
-            tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[1]]);
-            eraseFromSaveListByItem(saveListLinehaul,nodeCouple[0]);
-            tmpThresh -= 2;
-            unassignedLinehaulsNodes -= 2;
-        }
-
-        //segnala se il veicolo ha capacità sufficiente a soddisfare il delivery del successore ottimale(saving più alto) nella route
-        hasNotFailed = true;
-
-
-        while(hasNotFailed && (tmpThresh > 0 || module > 0) && (saveListLinehaul.size() > 0/* || nodeLeftBehindL != 0)*/)){
-            lastNodeAdded = tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
-
-            //prova ad aggiungere il miglior successore e aggiorna hasNotFailed con true se è riuscito o false se ha fallito
-            /*if(nodeLeftBehindL != 0){
-                if(tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeLeftBehindL])){
-                    nodeLeftBehindL = 0;
-                }
-            }
-            else {*/
-                hasNotFailed = addBestAdjacentNodeByIndex(topology.getLinehaulNodes(),saveListLinehaul,
-                                                       tmpRoute,lastNodeAdded,true);
-            //}
-
-            if(hasNotFailed){
-
-                /*if(saveListLinehaul.size() == 1){
-                    if(saveListLinehaul.front()[0] == (tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1))){
-                        nodeLeftBehindL = saveListLinehaul.front()[1];
-                    }
-                    else {
-                        nodeLeftBehindL = saveListLinehaul.front()[0];
-                    }
-                    //nodeLeftBehindL = saveListLinehaul.front()[1];
-                    saveListLinehaul.erase(saveListLinehaul.begin());
-                }*/
-
-                if(tmpThresh > 0){
-                    tmpThresh -= 1;
-                }
-                else {
-                    module -=1;
-                }
-
-                unassignedLinehaulsNodes -= 1;
-            }
-            else {
-
-                if(tmpThresh > 0 && ((topology.getVehicle_num() - i -1) != 0)){
-                    threshold = unassignedLinehaulsNodes/(topology.getVehicle_num() - i -1);
-                    module = unassignedLinehaulsNodes %(topology.getVehicle_num() - i -1);
-                }
-            }
-        }
-
-        lastNodeAdded = tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
-
-        //aggiungo il backhaul ottimale dato l'ultimo linehaul aggiunto
-        size_t best = findBestBackhaulSuccessorFromLinehaul
-                (topology.getLinehaulNodes()[lastNodeAdded],topology.getBackhaulNodes(),saveListBackhaul);
-        if(best != 0){
-            tmpRoute.addBackhaul(topology.getBackhaulNodes()[best]);
-        }
-
-        eraseFromSaveListByItem(saveListLinehaul, lastNodeAdded);
-
-        //segnala se il veicolo ha capacità sufficiente a soddisfare il pickup del successore ottimale(saving più alto) nella route
-        hasNotFailed = true;
-
-        while(hasNotFailed && (saveListBackhaul.size() > 0 /*|| nodeLeftBehindB != 0)*/)){
-            lastNodeAdded = tmpRoute.getLastNode().getIndex();
-
-            /*if(nodeLeftBehindB != 0){
-                if(tmpRoute.addBackhaul(topology.getBackhaulNodes()[nodeLeftBehindB])){
-                    nodeLeftBehindB = 0;
-                }
-                else {
-                    hasNotFailed = false;
-                }
-            }
-            else {*/
-                //prova ad aggiungere il miglior successore e aggiorna hasNotFailed con true se è riuscito o false se ha fallito
-                hasNotFailed = addBestAdjacentNodeByIndex(topology.getBackhaulNodes(),saveListBackhaul,
-                                                          tmpRoute,lastNodeAdded,false);
-            //}
-
-
-            if(hasNotFailed){
-
-                /*if(saveListBackhaul.size() == 1){
-                    if(saveListBackhaul.front()[0] == tmpRoute.getLastNode().getIndex()){
-                        nodeLeftBehindB = saveListBackhaul.front()[1];
-                    }
-                    else {
-                        nodeLeftBehindB = saveListBackhaul.front()[0];
-                    }
-                    saveListBackhaul.erase(saveListBackhaul.begin());
-                }*/
-            }
-            else {
-                eraseFromSaveListByItem(saveListBackhaul,tmpRoute.getLastNode().getIndex());
-            }
-        }
-
-        tmpRoute.addLinehaul(topology.getLinehaulNodes()[0]);
-
-        routes.push_back(tmpRoute);
-    }
-
-    //writeOnFile(routes,topology.getNode_num());
-
 }
 
 //CW sequenziale refined che aggiunge due coppie agli ultimi veicoli rimasti
@@ -702,9 +590,9 @@ void cWseqRaw(const Topology& topology,std::vector<Drawable_route>& routes){
 
 }
 
-//CW senza vincoli,per prova
+//CW sequenziale raw schizzinoso che aggiunge due coppie agli ultimi veicoli rimasti
 
-void cWseqBoh(const Topology& topology,std::vector<Drawable_route>& routes){
+void cWseqUltimate(const Topology& topology,std::vector<Drawable_route>& routes){
 
     size_t nNodesLinehaul=topology.getLinehaulNodes().size();
 
@@ -736,7 +624,8 @@ void cWseqBoh(const Topology& topology,std::vector<Drawable_route>& routes){
     computeSaveList(saveTableBackhaul,saveListBackhaul);
 
     //Processo del passo base
-    Drawable_route tmpRoute = Drawable_route(topology.getCapacity(),0);
+    Drawable_route tmpRouteLinehaul = Drawable_route(topology.getCapacity(),0);
+    Drawable_route tmpRouteBackhaul = Drawable_route(topology.getCapacity(),0);
     size_t lastNodeAdded;
     std::array<size_t,2> nodeCouple;
     bool hasNotFailed;
@@ -747,42 +636,36 @@ void cWseqBoh(const Topology& topology,std::vector<Drawable_route>& routes){
 
     for (int i=0;i<topology.getVehicle_num();i++) {
 
-        tmpRoute = Drawable_route(topology.getCapacity(),i);
+        tmpRouteLinehaul = Drawable_route(topology.getCapacity(),i);
+        tmpRouteBackhaul = Drawable_route(topology.getCapacity(),i);
 
         //Richiama la capacità standard di un veicolo
 
         //Inserimento del magazzino base all'interno della route
-        tmpRoute.addStartingPoint(topology.getLinehaulNodes()[0]);
+        tmpRouteLinehaul.addStartingPoint(topology.getLinehaulNodes()[0]);
         //Le righe di sopra vanno inserite in bootRoute()
 
 
-        if(saveListLinehaul.size() > 0 /*&& !(unassignedLinehaulsNodes != (topology.getVehicle_num()-i-1))*/){
+        if(saveListLinehaul.size() > 0){
 
             //aggiungo alla route i primi due Linehaul con il saving più alto
             nodeCouple = saveListLinehaul.front();
             saveListLinehaul.erase(saveListLinehaul.begin());
-            tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[0]]);
-            tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[1]]);
+            tmpRouteLinehaul.addLinehaul(topology.getLinehaulNodes()[nodeCouple[0]]);
+            tmpRouteLinehaul.addLinehaul(topology.getLinehaulNodes()[nodeCouple[1]]);
             eraseFromSaveListByItem(saveListLinehaul,nodeCouple[0]);
             unassignedLinehaulsNodes -= 2;
         }
-        /*else {
-
-            nodeCouple = saveListLinehaul.front();
-
-            tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[0]]);
-            unassignedLinehaulsNodes --;
-        }*/
 
         //segnala se il veicolo ha capacità sufficiente a soddisfare il delivery del successore ottimale(saving più alto) nella route
         hasNotFailed = true;
 
 
-        while(hasNotFailed && /*(unassignedLinehaulsNodes > (topology.getVehicle_num()-i-1)) && */(saveListLinehaul.size() > 0)){
-            lastNodeAdded = tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
+        while(hasNotFailed && (unassignedLinehaulsNodes > 2*(topology.getVehicle_num()-i-1)) && (saveListLinehaul.size() > 0)){
+            lastNodeAdded = tmpRouteLinehaul.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
 
-                hasNotFailed = addBestAdjacentNodeByIndexOptimized(topology.getLinehaulNodes(),saveListLinehaul,
-                                                       tmpRoute,lastNodeAdded,true);
+            hasNotFailed = addBestAdjacentNodeByIndex(topology.getLinehaulNodes(),saveListLinehaul,
+                                                       tmpRouteLinehaul,lastNodeAdded,true);
 
 
             if(hasNotFailed){
@@ -790,43 +673,77 @@ void cWseqBoh(const Topology& topology,std::vector<Drawable_route>& routes){
             }
         }
 
-        lastNodeAdded = tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
-
-        //aggiungo il backhaul ottimale dato l'ultimo linehaul aggiunto
-        size_t best = findBestBackhaulSuccessorFromLinehaul
-                (topology.getLinehaulNodes()[lastNodeAdded],topology.getBackhaulNodes(),saveListBackhaul);
-        if(best != 0){
-            tmpRoute.addBackhaul(topology.getBackhaulNodes()[best]);
-        }
+        lastNodeAdded = tmpRouteLinehaul.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
 
         eraseFromSaveListByItem(saveListLinehaul, lastNodeAdded);
+
+        tmpRouteBackhaul.addStartingPoint(topology.getLinehaulNodes()[0]);
+
+        if(saveListBackhaul.size() > 0){
+
+            //aggiungo alla route i primi due Linehaul con il saving più alto
+            nodeCouple = saveListBackhaul.front();
+            saveListBackhaul.erase(saveListBackhaul.begin());
+            tmpRouteBackhaul.addBackhaul(topology.getBackhaulNodes()[nodeCouple[0]]);
+            tmpRouteBackhaul.addBackhaul(topology.getBackhaulNodes()[nodeCouple[1]]);
+            eraseFromSaveListByItem(saveListBackhaul,nodeCouple[0]);
+        }
+
 
         //segnala se il veicolo ha capacità sufficiente a soddisfare il pickup del successore ottimale(saving più alto) nella route
         hasNotFailed = true;
 
-        while(hasNotFailed && (saveListBackhaul.size() > 0)){
-            lastNodeAdded = tmpRoute.getLastNode().getIndex();
+        while(hasNotFailed && (saveListBackhaul.size() > 0 || nodeLeftBehindB != 0)){
+            lastNodeAdded = tmpRouteBackhaul.getLastNode().getIndex();
 
-            //prova ad aggiungere il miglior successore e aggiorna hasNotFailed con true se è riuscito o false se ha fallito
-            hasNotFailed = addBestAdjacentNodeByIndex(topology.getBackhaulNodes(),saveListBackhaul,
-                                                          tmpRoute,lastNodeAdded,false);
+            if(nodeLeftBehindB != 0){
+                if(tmpRouteBackhaul.addBackhaul(topology.getBackhaulNodes()[nodeLeftBehindB])){
+                    nodeLeftBehindB = 0;
+                }
+                else {
+                    hasNotFailed = false;
+                }
+            }
+            else {
+                //prova ad aggiungere il miglior successore e aggiorna hasNotFailed con true se è riuscito o false se ha fallito
+                hasNotFailed = addBestAdjacentNodeByIndex(topology.getBackhaulNodes(),saveListBackhaul,
+                                                          tmpRouteBackhaul,lastNodeAdded,false);
+            }
+
 
             if(hasNotFailed){
 
+                if(saveListBackhaul.size() == 1){
+                    if(saveListBackhaul.front()[0] == tmpRouteBackhaul.getLastNode().getIndex()){
+                        nodeLeftBehindB = saveListBackhaul.front()[1];
+                    }
+                    else {
+                        nodeLeftBehindB = saveListBackhaul.front()[0];
+                    }
+                    saveListBackhaul.erase(saveListBackhaul.begin());
+                }
             }
             else {
-                eraseFromSaveListByItem(saveListBackhaul,tmpRoute.getLastNode().getIndex());
+                eraseFromSaveListByItem(saveListBackhaul,tmpRouteBackhaul.getLastNode().getIndex());
             }
         }
 
-        tmpRoute.addLinehaul(topology.getLinehaulNodes()[0]);
+        Drawable_route finalRoute = Drawable_route(topology.getCapacity(),i);
 
-        routes.push_back(tmpRoute);
+        ultimateGyakuKeiroNoJutsu(tmpRouteLinehaul,tmpRouteBackhaul,finalRoute);
+
+
+
+        finalRoute.addLinehaul(topology.getLinehaulNodes()[0]);
+
+        routes.push_back(finalRoute);
     }
 
-    //writeOnFile(routes,topology.getNode_num());
+    adjustLinehauls(routes,topology);
 
 }
+
+
 
 
 

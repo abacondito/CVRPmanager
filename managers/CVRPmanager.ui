@@ -154,6 +154,11 @@
       </item>
       <item>
        <property name="text">
+        <string>CWseqMastered</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
         <string>CWpar</string>
        </property>
       </item>
