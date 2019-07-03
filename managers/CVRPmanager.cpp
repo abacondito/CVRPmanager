@@ -131,7 +131,7 @@ CVRPmanager::~CVRPmanager() {
  * Note that the vector could contain duplicates.
  * @param[in] points Vector of points
  */
-void CVRPmanager::computeCvrpAlgorithm(const Topology& topology) {
+void CVRPmanager::computeCvrpAlgorithm(const Topology& topology,const std::string& fileName) {
     //Launch your Delaunay triangulation algorithm here on the vector "inputPoints" in input
     //(note that the vector could contain duplicates!!).
     //Here you should call an algorithm (obviously defined in ANOTHER FILE!) which
@@ -153,6 +153,9 @@ void CVRPmanager::computeCvrpAlgorithm(const Topology& topology) {
         break;
     case(3):
         cWpar(topology,this->singleRoutes);
+        break;
+    case(4):
+        cWparRandomized(topology,this->singleRoutes,fileName);
         break;
     }
     /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
@@ -277,15 +280,14 @@ void CVRPmanager::eraseDrawnRoutes() {
  * on the input points (a vector) of this manager and measure
  * its time efficiency.
  */
-void CVRPmanager::launchAlgorithmAndMeasureTime(const Topology& topology) { //Do not write code here
+void CVRPmanager::launchAlgorithmAndMeasureTime(const Topology& topology,const std::string& fileName) { //Do not write code here
     //Output message
-    //std::cout << "Executing the algorithm for " << this->points.size() << " points..." << std::endl;
 
     //Timer for evaluating the efficiency of the algorithm
     cg3::Timer t("Computing cvrp");
 
     //Launch delaunay algorithm on the vector of input points
-    computeCvrpAlgorithm(topology);
+    computeCvrpAlgorithm(topology,fileName);
 
     //Timer stop and visualization (both on console and UI)
     t.stopAndPrint();
@@ -353,13 +355,17 @@ void CVRPmanager::on_loadFilePushButton_clicked() { //Do not write code here
         case(3):
             name += "_cWpar_test";
             break;
+        case(4):
+            name += "_cWparRandomized_test";
+            break;
         }
 
-        //std::ofstream myfile (name);
 
-        launchAlgorithmAndMeasureTime(topology);
+        launchAlgorithmAndMeasureTime(topology,name);
 
-        writeOnExistingFile(this->singleRoutes,topology.getNode_num(),name);
+        //if(selected!= 4){
+            writeOnExistingFile(this->singleRoutes,topology.getNode_num(),name);
+        //}
 
         //Draw Delaunay Triangulation
         drawRoutes();

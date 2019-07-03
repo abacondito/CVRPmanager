@@ -46,10 +46,8 @@ SOURCES += \
     algorithms/cvrputils.cpp \
     data_structures/node.cpp \
     data_structures/route.cpp \
-    data_structures/routes.cpp \
     data_structures/topology.cpp \
     drawable_objects/drawable_route.cpp \
-    drawable_objects/drawable_routes.cpp \
     main.cpp \
     managers/CVRPmanager.cpp \
     utils/fileutils.cpp
@@ -63,10 +61,8 @@ HEADERS += \
     algorithms/cvrputils.h \
     data_structures/node.h \
     data_structures/route.h \
-    data_structures/routes.h \
     data_structures/topology.h \
     drawable_objects/drawable_route.h \
-    drawable_objects/drawable_routes.h \
     managers/CVRPmanager.h \
     utils/fileutils.h
 

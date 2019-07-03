@@ -227,7 +227,7 @@ void writeOnFile(std::vector<Drawable_route>& routes,int nNodes){
     }
 }
 
-void writeOnExistingFile(std::vector<Drawable_route>& routes,int nNodes,std::string& path){
+void writeOnExistingFile(std::vector<Drawable_route>& routes,int nNodes,const std::string& path){
 
     std::ofstream myfile (path);
 

@@ -432,9 +432,6 @@ void cWseqRefined(const Topology& topology,std::vector<Drawable_route>& routes){
 
         routes.push_back(tmpRoute);
     }
-
-    //writeOnFile(routes,topology.getNode_num());
-
 }
 
 //CW sequenziale raw schizzinoso che aggiunge due coppie agli ultimi veicoli rimasti
@@ -585,8 +582,6 @@ void cWseqRaw(const Topology& topology,std::vector<Drawable_route>& routes){
     }
 
     adjustLinehauls(routes,topology);
-
-    //writeOnFile(routes,topology.getNode_num());
 
 }
 

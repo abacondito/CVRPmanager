@@ -9,7 +9,6 @@
 
 #include <data_structures/topology.h>
 
-#include <drawable_objects/drawable_routes.h>
 #include <drawable_objects/drawable_route.h>
 
 
@@ -48,7 +47,7 @@ private:
 
     /* ----- Private main methods ----- */
 
-    void computeCvrpAlgorithm(const Topology& topology);
+    void computeCvrpAlgorithm(const Topology& topology,const std::string& fileName);
 
     void clearRoutes();
 
@@ -78,7 +77,7 @@ private:
     /* ----- Private utility methods ----- */
 
     void fitScene();
-    void launchAlgorithmAndMeasureTime(const Topology& topology);
+    void launchAlgorithmAndMeasureTime(const Topology& topology,const std::string& fileName);
 
 
 private slots:
