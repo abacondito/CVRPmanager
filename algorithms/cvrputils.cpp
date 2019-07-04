@@ -227,7 +227,7 @@ void writeOnFile(std::vector<Drawable_route>& routes,int nNodes){
     }
 }
 
-void writeOnExistingFile(std::vector<Drawable_route>& routes,int nNodes,const std::string& path){
+void writeOnExistingFile(std::vector<Drawable_route>& routes,int nNodes,const std::string& path,const double& time){
 
     std::ofstream myfile (path);
 
@@ -240,7 +240,7 @@ void writeOnExistingFile(std::vector<Drawable_route>& routes,int nNodes,const st
         if (myfile.is_open())
         {
             //myfile << i << "   ";
-            myfile << "Max cost:" << routes[i].getTotCost() << "   ";
+            myfile << "Route cost:" << routes[i].getTotCost() << "   ";
             totCost += routes[i].getTotCost();
         }
 
@@ -290,7 +290,8 @@ void writeOnExistingFile(std::vector<Drawable_route>& routes,int nNodes,const st
 
     if (myfile.is_open())
     {
-        myfile << "\n" << "\n" << "Tot Cost :" << totCost;
+        myfile << "\n" << "\n" << "Tot Cost : " << totCost;
+        myfile << "\n" << "Elaboration time : " << time;
         myfile.close();
     }
 }
@@ -298,7 +299,7 @@ void writeOnExistingFile(std::vector<Drawable_route>& routes,int nNodes,const st
 
 
 //Ottiene il massimo da un array2D e i rispettivi indici
-std::array<size_t,2> getMaxIndexes(cg3::Array2D<double> matrix){
+std::array<size_t,2> getMaxIndexes(cg3::Array2D<double>& matrix){
 
     size_t i,j;
     double tmp=0.0;

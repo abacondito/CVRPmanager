@@ -15,8 +15,8 @@ void computeSaveTable(const cg3::Array2D<double>& distTable, cg3::Array2D<double
 void computeSaveList(cg3::Array2D<double>& saveTable, std::list<std::array<size_t,2>>& saveList);
 
 void writeOnFile(/*Routes& routes*/std::vector<Drawable_route>& routes,int nNodes);
-void writeOnExistingFile(/*Routes& routes*/std::vector<Drawable_route>& routes,int nNodes,const std::string& path);
-std::array<size_t,2> getMaxIndexes(cg3::Array2D<double> matrix);
+void writeOnExistingFile(/*Routes& routes*/std::vector<Drawable_route>& routes,int nNodes,const std::string& path,const double& time);
+std::array<size_t,2> getMaxIndexes(cg3::Array2D<double>& matrix);
 void eraseFromSaveListByItem(std::list<std::array<size_t,2>>& saveList,size_t index);
 void adjustLinehauls(std::vector<Drawable_route>& routes,const Topology& topology);
 

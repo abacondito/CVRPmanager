@@ -288,9 +288,285 @@ bool addBestAdjacentNodeByIndexOptimized(const std::vector<Node>& nodeList,std::
     return false;
 }
 
-//CW sequenziale refined che aggiunge due coppie agli ultimi veicoli rimasti
+//CW sequenziale che aggiunge due coppie agli ultimi veicoli rimasti,con inversione di rotta
 
-void cWseqRefined(const Topology& topology,std::vector<Drawable_route>& routes){
+void cWseqInversion(const Topology& topology,std::vector<Drawable_route>& routes){
+
+    size_t nNodesLinehaul=topology.getLinehaulNodes().size();
+
+    //inizializzo tabella distanze Linehaul
+    cg3::Array2D<double> distTableLinehaul = cg3::Array2D<double>(nNodesLinehaul,nNodesLinehaul,0.0);
+    computeDistTable(topology.getLinehaulNodes(),distTableLinehaul);
+
+    //inizializzo tabella savings Linehaul
+    cg3::Array2D<double> saveTableLinehaul = cg3::Array2D<double>(nNodesLinehaul,nNodesLinehaul,0.0);
+    computeSaveTable(distTableLinehaul, saveTableLinehaul);
+
+    //inizializzo lista ordinata savings Linehaul
+    std::list<std::array<size_t,2>> saveListLinehaul;
+    computeSaveList(saveTableLinehaul,saveListLinehaul);
+
+
+    size_t nNodesBackhaul=topology.getBackhaulNodes().size();
+
+    //inizializzo tabella distanze Backhaul
+    cg3::Array2D<double> distTableBackhaul = cg3::Array2D<double>(nNodesBackhaul,nNodesBackhaul,0.0);
+    computeDistTable(topology.getBackhaulNodes(),distTableBackhaul);
+
+    //inizializzo tabella distanze Backhaul
+    cg3::Array2D<double> saveTableBackhaul = cg3::Array2D<double>(nNodesBackhaul,nNodesBackhaul,0.0);
+    computeSaveTable(distTableBackhaul, saveTableBackhaul);
+
+    //inizializzo tabella distanze Backhaul
+    std::list<std::array<size_t,2>> saveListBackhaul;
+    computeSaveList(saveTableBackhaul,saveListBackhaul);
+
+    //Processo del passo base
+    Drawable_route tmpRoute = Drawable_route(topology.getCapacity(),0);
+    size_t lastNodeAdded;
+    std::array<size_t,2> nodeCouple;
+    bool hasNotFailed;
+
+    int unassignedLinehaulsNodes = topology.getLinehaulNodes().size() -1;
+
+    size_t nodeLeftBehindB = 0;
+
+    for (int i=0;i<topology.getVehicle_num();i++) {
+
+        tmpRoute = Drawable_route(topology.getCapacity(),i);
+
+        //Richiama la capacità standard di un veicolo
+
+        //Inserimento del magazzino base all'interno della route
+        tmpRoute.addStartingPoint(topology.getLinehaulNodes()[0]);
+        //Le righe di sopra vanno inserite in bootRoute()
+
+
+        if(saveListLinehaul.size() > 0){
+
+            //aggiungo alla route i primi due Linehaul con il saving più alto
+            nodeCouple = saveListLinehaul.front();
+            saveListLinehaul.erase(saveListLinehaul.begin());
+            tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[0]]);
+            tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[1]]);
+            eraseFromSaveListByItem(saveListLinehaul,nodeCouple[0]);
+            unassignedLinehaulsNodes -= 2;
+        }
+
+        //segnala se il veicolo ha capacità sufficiente a soddisfare il delivery del successore ottimale(saving più alto) nella route
+        hasNotFailed = true;
+
+
+        while(hasNotFailed && (unassignedLinehaulsNodes > 2*(topology.getVehicle_num()-i-1)) && (saveListLinehaul.size() > 0)){
+            lastNodeAdded = tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
+
+            hasNotFailed = addBestAdjacentNodeByIndexOptimized(topology.getLinehaulNodes(),saveListLinehaul,
+                                                       tmpRoute,lastNodeAdded,true);
+
+
+            if(hasNotFailed){
+                unassignedLinehaulsNodes -= 1;
+            }
+        }
+
+        lastNodeAdded = tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
+
+        //inizio passo intermedio con inversione
+        std::vector<Node> tmpNodes = topology.getBackhaulNodes();
+
+        gyakuKeiroNoJutsu(tmpRoute,tmpNodes,saveListBackhaul);
+
+        //fine passo intermedio con inversione
+
+        eraseFromSaveListByItem(saveListLinehaul, lastNodeAdded);
+
+        //segnala se il veicolo ha capacità sufficiente a soddisfare il pickup del successore ottimale(saving più alto) nella route
+        hasNotFailed = true;
+
+        while(hasNotFailed && (saveListBackhaul.size() > 0 || nodeLeftBehindB != 0)){
+            lastNodeAdded = tmpRoute.getLastNode().getIndex();
+
+            if(nodeLeftBehindB != 0){
+                if(tmpRoute.addBackhaul(topology.getBackhaulNodes()[nodeLeftBehindB])){
+                    nodeLeftBehindB = 0;
+                }
+                else {
+                    hasNotFailed = false;
+                }
+            }
+            else {
+                //prova ad aggiungere il miglior successore e aggiorna hasNotFailed con true se è riuscito o false se ha fallito
+                hasNotFailed = addBestAdjacentNodeByIndex(topology.getBackhaulNodes(),saveListBackhaul,
+                                                          tmpRoute,lastNodeAdded,false);
+            }
+
+
+            if(hasNotFailed){
+
+                if(saveListBackhaul.size() == 1){
+                    if(saveListBackhaul.front()[0] == tmpRoute.getLastNode().getIndex()){
+                        nodeLeftBehindB = saveListBackhaul.front()[1];
+                    }
+                    else {
+                        nodeLeftBehindB = saveListBackhaul.front()[0];
+                    }
+                    saveListBackhaul.erase(saveListBackhaul.begin());
+                }
+            }
+            else {
+                eraseFromSaveListByItem(saveListBackhaul,tmpRoute.getLastNode().getIndex());
+            }
+        }
+
+        tmpRoute.addLinehaul(topology.getLinehaulNodes()[0]);
+
+        routes.push_back(tmpRoute);
+    }
+}
+
+//CW sequenziale schizzinoso che aggiunge due coppie agli ultimi veicoli rimasti,con inversione di rotta
+
+void cWseqSqueamishInversion(const Topology& topology,std::vector<Drawable_route>& routes){
+
+    size_t nNodesLinehaul=topology.getLinehaulNodes().size();
+
+    //inizializzo tabella distanze Linehaul
+    cg3::Array2D<double> distTableLinehaul = cg3::Array2D<double>(nNodesLinehaul,nNodesLinehaul,0.0);
+    computeDistTable(topology.getLinehaulNodes(),distTableLinehaul);
+
+    //inizializzo tabella savings Linehaul
+    cg3::Array2D<double> saveTableLinehaul = cg3::Array2D<double>(nNodesLinehaul,nNodesLinehaul,0.0);
+    computeSaveTable(distTableLinehaul, saveTableLinehaul);
+
+    //inizializzo lista ordinata savings Linehaul
+    std::list<std::array<size_t,2>> saveListLinehaul;
+    computeSaveList(saveTableLinehaul,saveListLinehaul);
+
+
+    size_t nNodesBackhaul=topology.getBackhaulNodes().size();
+
+    //inizializzo tabella distanze Backhaul
+    cg3::Array2D<double> distTableBackhaul = cg3::Array2D<double>(nNodesBackhaul,nNodesBackhaul,0.0);
+    computeDistTable(topology.getBackhaulNodes(),distTableBackhaul);
+
+    //inizializzo tabella distanze Backhaul
+    cg3::Array2D<double> saveTableBackhaul = cg3::Array2D<double>(nNodesBackhaul,nNodesBackhaul,0.0);
+    computeSaveTable(distTableBackhaul, saveTableBackhaul);
+
+    //inizializzo tabella distanze Backhaul
+    std::list<std::array<size_t,2>> saveListBackhaul;
+    computeSaveList(saveTableBackhaul,saveListBackhaul);
+
+    //Processo del passo base
+    Drawable_route tmpRoute = Drawable_route(topology.getCapacity(),0);
+    size_t lastNodeAdded;
+    std::array<size_t,2> nodeCouple;
+    bool hasNotFailed;
+
+    int unassignedLinehaulsNodes = topology.getLinehaulNodes().size() -1;
+
+    size_t nodeLeftBehindB = 0;
+
+    for (int i=0;i<topology.getVehicle_num();i++) {
+
+        tmpRoute = Drawable_route(topology.getCapacity(),i);
+
+        //Richiama la capacità standard di un veicolo
+
+        //Inserimento del magazzino base all'interno della route
+        tmpRoute.addStartingPoint(topology.getLinehaulNodes()[0]);
+        //Le righe di sopra vanno inserite in bootRoute()
+
+
+        if(saveListLinehaul.size() > 0){
+
+            //aggiungo alla route i primi due Linehaul con il saving più alto
+            nodeCouple = saveListLinehaul.front();
+            saveListLinehaul.erase(saveListLinehaul.begin());
+            tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[0]]);
+            tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[1]]);
+            eraseFromSaveListByItem(saveListLinehaul,nodeCouple[0]);
+            unassignedLinehaulsNodes -= 2;
+        }
+
+        //segnala se il veicolo ha capacità sufficiente a soddisfare il delivery del successore ottimale(saving più alto) nella route
+        hasNotFailed = true;
+
+
+        while(hasNotFailed && (unassignedLinehaulsNodes > 2*(topology.getVehicle_num()-i-1)) && (saveListLinehaul.size() > 0)){
+            lastNodeAdded = tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
+
+            hasNotFailed = addBestAdjacentNodeByIndex(topology.getLinehaulNodes(),saveListLinehaul,
+                                                       tmpRoute,lastNodeAdded,true);
+
+
+            if(hasNotFailed){
+                unassignedLinehaulsNodes -= 1;
+            }
+        }
+
+        lastNodeAdded = tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
+
+        //inizio passo intermedio con inversione
+
+        std::vector<Node> tmpNodes = topology.getBackhaulNodes();
+
+        gyakuKeiroNoJutsu(tmpRoute,tmpNodes,saveListBackhaul);
+
+        //fine passo intermedio con inversione
+
+        eraseFromSaveListByItem(saveListLinehaul, lastNodeAdded);
+
+        //segnala se il veicolo ha capacità sufficiente a soddisfare il pickup del successore ottimale(saving più alto) nella route
+        hasNotFailed = true;
+
+        while(hasNotFailed && (saveListBackhaul.size() > 0 || nodeLeftBehindB != 0)){
+            lastNodeAdded = tmpRoute.getLastNode().getIndex();
+
+            if(nodeLeftBehindB != 0){
+                if(tmpRoute.addBackhaul(topology.getBackhaulNodes()[nodeLeftBehindB])){
+                    nodeLeftBehindB = 0;
+                }
+                else {
+                    hasNotFailed = false;
+                }
+            }
+            else {
+                //prova ad aggiungere il miglior successore e aggiorna hasNotFailed con true se è riuscito o false se ha fallito
+                hasNotFailed = addBestAdjacentNodeByIndex(topology.getBackhaulNodes(),saveListBackhaul,
+                                                          tmpRoute,lastNodeAdded,false);
+            }
+
+
+            if(hasNotFailed){
+
+                if(saveListBackhaul.size() == 1){
+                    if(saveListBackhaul.front()[0] == tmpRoute.getLastNode().getIndex()){
+                        nodeLeftBehindB = saveListBackhaul.front()[1];
+                    }
+                    else {
+                        nodeLeftBehindB = saveListBackhaul.front()[0];
+                    }
+                    saveListBackhaul.erase(saveListBackhaul.begin());
+                }
+            }
+            else {
+                eraseFromSaveListByItem(saveListBackhaul,tmpRoute.getLastNode().getIndex());
+            }
+        }
+
+        tmpRoute.addLinehaul(topology.getLinehaulNodes()[0]);
+
+        routes.push_back(tmpRoute);
+    }
+
+    adjustLinehauls(routes,topology);
+
+}
+
+//CW sequenziale standard che aggiunge due coppie agli ultimi veicoli rimasti
+
+void cWseq(const Topology& topology,std::vector<Drawable_route>& routes){
 
     size_t nNodesLinehaul=topology.getLinehaulNodes().size();
 
@@ -373,20 +649,13 @@ void cWseqRefined(const Topology& topology,std::vector<Drawable_route>& routes){
 
 
         //passo intermedio standard
-        /*
+
         size_t best = findBestBackhaulSuccessorFromLinehaul
                 (topology.getLinehaulNodes()[lastNodeAdded],topology.getBackhaulNodes(),saveListBackhaul);
         if(best != 0){
             tmpRoute.addBackhaul(topology.getBackhaulNodes()[best]);
-        }*/
-        //fine passo intermedio standard
-
-        //inizio passo intermedio con inversione
-        std::vector<Node> tmpNodes = topology.getBackhaulNodes();
-
-        gyakuKeiroNoJutsu(tmpRoute,tmpNodes,saveListBackhaul);
-
-        //fine passo intermedio con inversione
+        }
+        //fine passo intermedio standarde
 
         eraseFromSaveListByItem(saveListLinehaul, lastNodeAdded);
 
@@ -434,9 +703,9 @@ void cWseqRefined(const Topology& topology,std::vector<Drawable_route>& routes){
     }
 }
 
-//CW sequenziale raw schizzinoso che aggiunge due coppie agli ultimi veicoli rimasti
+//CW sequenziale schizzinoso che aggiunge due coppie agli ultimi veicoli rimasti
 
-void cWseqRaw(const Topology& topology,std::vector<Drawable_route>& routes){
+void cWseqSqueamish(const Topology& topology,std::vector<Drawable_route>& routes){
 
     size_t nNodesLinehaul=topology.getLinehaulNodes().size();
 
@@ -518,23 +787,14 @@ void cWseqRaw(const Topology& topology,std::vector<Drawable_route>& routes){
         lastNodeAdded = tmpRoute.getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
 
         //inizio passo intermedio standard
-        /*
+
         //aggiungo il backhaul ottimale dato l'ultimo linehaul aggiunto
         size_t best = findBestBackhaulSuccessorFromLinehaul
                 (topology.getLinehaulNodes()[lastNodeAdded],topology.getBackhaulNodes(),saveListBackhaul);
         if(best != 0){
             tmpRoute.addBackhaul(topology.getBackhaulNodes()[best]);
-        }*/
+        }
         //fine passo intermedio standard
-
-
-        //inizio passo intermedio con inversione
-
-        std::vector<Node> tmpNodes = topology.getBackhaulNodes();
-
-        gyakuKeiroNoJutsu(tmpRoute,tmpNodes,saveListBackhaul);
-
-        //fine passo intermedio con inversione
 
         eraseFromSaveListByItem(saveListLinehaul, lastNodeAdded);
 
@@ -585,9 +845,9 @@ void cWseqRaw(const Topology& topology,std::vector<Drawable_route>& routes){
 
 }
 
-//CW sequenziale raw schizzinoso che aggiunge due coppie agli ultimi veicoli rimasti
+//CW sequenziale che assembla separatamente linehaul e backhaul e poi li unisce
 
-void cWseqUltimate(const Topology& topology,std::vector<Drawable_route>& routes){
+void cWseqMerge(const Topology& topology,std::vector<Drawable_route>& routes){
 
     size_t nNodesLinehaul=topology.getLinehaulNodes().size();
 

@@ -35,41 +35,25 @@ private:
     Ui::CVRPmanager *ui;
     cg3::viewer::MainWindow& mainWindow;    
 
-    //Declare your private attributes here
-    /********************************************************************************************************************/
+
     std::vector<Drawable_route> singleRoutes;
-    /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
 
-    /********************************************************************************************************************/
-
-
+    double time;
 
 
     /* ----- Private main methods ----- */
 
-    void computeCvrpAlgorithm(const Topology& topology,const std::string& fileName);
+    void computeCvrpAlgorithm(const Topology& topology);
 
     void clearRoutes();
 
     void drawRoutes();
     void eraseDrawnRoutes();
 	
-    //Declare your private methods here if you need some
-    /********************************************************************************************************************/
-
-    /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
-
-    /********************************************************************************************************************/
 
 
 private slots:
 
-    //Declare your private slots methods here if you need some. They are needed if you want to implement Voronoi
-    /********************************************************************************************************************/
-
-    /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
-
-    /********************************************************************************************************************/
 
 
 private:
@@ -77,7 +61,7 @@ private:
     /* ----- Private utility methods ----- */
 
     void fitScene();
-    void launchAlgorithmAndMeasureTime(const Topology& topology,const std::string& fileName);
+    void launchAlgorithmAndMeasureTime(const Topology& topology);
 
 
 private slots:

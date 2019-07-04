@@ -13,6 +13,8 @@ bool nodeInOtherRoutes(size_t nodeIndex,std::vector<Drawable_route>& routes){
 }
 
 
+//inversione della rotta se vi è un saving maggiore con il primo linehaul e il primo backhaul,per CW parallelo
+
 bool gyakuKeiroNoJutsuPar(Route& route,std::vector<Node>& backhauls,std::vector<Drawable_route>& routes,std::list<std::array<size_t,2>>& saveBackhaulList){
 
     size_t maxIndex1 = 0;
@@ -182,6 +184,8 @@ bool addBestAdjacentNodeByIndexPar(const std::vector<Node>& nodeList,std::list<s
     return false;
 }
 
+//aggiunge il miglior successore dello stesso tipo a un linehaul o backhaul,non accontentandosi se il primo risultato non è soddisfabile
+
 bool addBestAdjacentNodeByIndexOptimizedPar(const std::vector<Node>& nodeList,std::list<std::array<size_t,2>>& saveList,std::vector<Drawable_route>& routes,
                                 size_t routeIndex, const size_t index,const bool lineHaulOrBackhaul){
 
@@ -234,7 +238,6 @@ bool addBestAdjacentNodeByIndexOptimizedPar(const std::vector<Node>& nodeList,st
     return false;
 }
 
-
 //CW parallelo
 
 void cWpar(const Topology& topology,std::vector<Drawable_route>& tmpRoutes){
@@ -285,8 +288,6 @@ void cWpar(const Topology& topology,std::vector<Drawable_route>& tmpRoutes){
     size_t nodeIndex2;
     Node node1;
     Node node2;
-    size_t nodeLeftBehindL = 0;
-    size_t nodeLeftBehindB = 0;
 
     //inizializzo le route con le coppie di linehaul con il saving maggiore
 
@@ -350,9 +351,6 @@ void cWpar(const Topology& topology,std::vector<Drawable_route>& tmpRoutes){
                 }
             }
             else if (!hasFinshedLinehaul[k] && saveListLinehaul.size() == 0) {
-                /*finished[k] = true;
-                tmpRoutes[k].addLinehaul(topology.getLinehaulNodes()[0]);
-                finishedRoutes++;*/
                 hasFinshedLinehaul[k] = true;
                 mustDoIntermediatePass[k]=true;
             }
@@ -363,7 +361,7 @@ void cWpar(const Topology& topology,std::vector<Drawable_route>& tmpRoutes){
 
                 lastNodeAdded = tmpRoutes[k].getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
                 //passo intermedio standard
-                /*size_t best = findBestBackhaulSuccessorFromLinehaulPar
+                size_t best = findBestBackhaulSuccessorFromLinehaulPar
                         (topology.getLinehaulNodes()[lastNodeAdded],topology.getBackhaulNodes(),tmpRoutes,saveListBackhaul);
                 if(best != 0){
                    tmpRoutes[k].addBackhaul(topology.getBackhaulNodes()[best]);
@@ -373,8 +371,165 @@ void cWpar(const Topology& topology,std::vector<Drawable_route>& tmpRoutes){
                     finished[k] = true;
                     tmpRoutes[k].addLinehaul(topology.getLinehaulNodes()[0]);
                     finishedRoutes++;
-                }*/
+                }
                 //fine passo intermedio standard
+
+                eraseFromSaveListByItem(saveListLinehaul, lastNodeAdded);
+
+            }
+
+            //Fase di soli Backhaul
+            else if(hasFinshedLinehaul[k] && !mustDoIntermediatePass[k] && saveListBackhaul.size() > 0){
+
+                lastNodeAdded = tmpRoutes[k].getLastNode().getIndex();
+
+                finished[k] = !(addBestAdjacentNodeByIndexPar(topology.getBackhaulNodes(),saveListBackhaul,tmpRoutes,
+                                                           k,lastNodeAdded,false));
+                if(finished[k]){
+                    eraseFromSaveListByItem(saveListBackhaul,lastNodeAdded);
+                    finished[k] = true;
+                    tmpRoutes[k].addLinehaul(topology.getLinehaulNodes()[0]);
+                    finishedRoutes ++;
+                }
+            }
+            else if (hasFinshedLinehaul[k] && !mustDoIntermediatePass[k] && saveListBackhaul.size() == 0) {
+                finished[k] = true;
+                eraseFromSaveListByItem(saveListBackhaul,lastNodeAdded);
+                tmpRoutes[k].addLinehaul(topology.getLinehaulNodes()[0]);
+                finishedRoutes++;
+            }
+        }
+        //passo alla route successiva
+        k = ++k % topology.getVehicle_num();
+    }
+
+    adjustLinehauls(tmpRoutes,topology);
+
+}
+
+
+//CW parallelo con inversione di rotta
+
+void cWparInversion(const Topology& topology,std::vector<Drawable_route>& tmpRoutes){
+    size_t nNodesLinehaul=topology.getLinehaulNodes().size();
+
+    //inizializzo tabella distanze Linehaul
+    cg3::Array2D<double> distTableLinehaul = cg3::Array2D<double>(nNodesLinehaul,nNodesLinehaul,0.0);
+    computeDistTable(topology.getLinehaulNodes(),distTableLinehaul);
+
+    //inizializzo tabella savings Linehaul
+    cg3::Array2D<double> saveTableLinehaul = cg3::Array2D<double>(nNodesLinehaul,nNodesLinehaul,0.0);
+    computeSaveTable(distTableLinehaul, saveTableLinehaul);
+
+    //inizializzo lista ordinata savings Linehaul
+    std::list<std::array<size_t,2>> saveListLinehaul;
+    computeSaveList(saveTableLinehaul,saveListLinehaul);
+
+
+    size_t nNodesBackhaul=topology.getBackhaulNodes().size();
+
+    //inizializzo tabella distanze Backhaul
+    cg3::Array2D<double> distTableBackhaul = cg3::Array2D<double>(nNodesBackhaul,nNodesBackhaul,0.0);
+    computeDistTable(topology.getBackhaulNodes(),distTableBackhaul);
+
+    //inizializzo tabella distanze Backhaul
+    cg3::Array2D<double> saveTableBackhaul = cg3::Array2D<double>(nNodesBackhaul,nNodesBackhaul,0.0);
+    computeSaveTable(distTableBackhaul, saveTableBackhaul);
+
+    //inizializzo tabella distanze Backhaul
+    std::list<std::array<size_t,2>> saveListBackhaul;
+    computeSaveList(saveTableBackhaul,saveListBackhaul);
+
+    //Processo del passo base
+    Drawable_route tmpRoute = Drawable_route(topology.getCapacity(),0);
+    size_t lastNodeAdded;
+    std::array<size_t,2> nodeCouple;
+
+    std::list<std::array<size_t,2>>::iterator it;
+    int finishedRoutes = 0;
+    int k = 0;
+
+
+    bool hasFinshedLinehaul[topology.getVehicle_num()];
+    bool mustDoIntermediatePass[topology.getVehicle_num()];
+    bool finished[topology.getVehicle_num()];
+    bool hasAssigned;
+    size_t nodeIndex1;
+    size_t nodeIndex2;
+    Node node1;
+    Node node2;
+
+    //inizializzo le route con le coppie di linehaul con il saving maggiore
+
+    for (int i = 0;i<topology.getVehicle_num();i++) {
+
+        hasFinshedLinehaul[i] = false;
+        mustDoIntermediatePass[i] = false;
+        finished[i] = false;
+
+        std::list<std::array<size_t,2>>::iterator it = saveListLinehaul.begin();
+
+        hasAssigned = false;
+
+        tmpRoute = Drawable_route(topology.getCapacity(),i);
+        tmpRoute.addLinehaul(topology.getLinehaulNodes()[0]);
+
+        while(it != saveListLinehaul.end() && !hasAssigned){
+
+            nodeCouple = *(it);
+            nodeIndex1 = nodeCouple[0] + (topology.getBackhaulNodes().size() - 1);
+            nodeIndex2 = nodeCouple[1] + (topology.getBackhaulNodes().size() - 1);
+            //se la coppia non è presente in nessuna route
+            if(!nodeInOtherRoutes(nodeIndex1,tmpRoutes) && !nodeInOtherRoutes(nodeIndex2,tmpRoutes)){
+
+
+                node1 = topology.getLinehaulNodes()[nodeCouple[0]];
+                node2 = topology.getLinehaulNodes()[nodeCouple[1]];
+
+
+                //controllo se posso caricare i nodi
+                if((node1.getDelivery() + node2.getDelivery()) <=  tmpRoute.getCurrent_capacity_linehaul()){
+
+                    //aggiungo la coppia
+                    saveListLinehaul.erase(it);
+                    tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[0]]);
+                    tmpRoute.addLinehaul(topology.getLinehaulNodes()[nodeCouple[1]]);
+                    eraseFromSaveListByItem(saveListLinehaul,nodeCouple[0]);
+                    tmpRoutes.push_back(tmpRoute);
+                    hasAssigned = true;
+                }
+            }
+
+            it++;
+        }
+    }
+
+
+    while(finishedRoutes < topology.getVehicle_num()){
+
+        //Se la rotta non è finita
+        if(!finished[k]){
+            //Fase di soli Linehaul
+            if(!hasFinshedLinehaul[k] && saveListLinehaul.size() > 0){
+                lastNodeAdded = tmpRoutes[k].getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
+
+                hasFinshedLinehaul[k] = !(addBestAdjacentNodeByIndexOptimizedPar(topology.getLinehaulNodes(),saveListLinehaul,tmpRoutes,
+                                                           k,lastNodeAdded,true));
+
+                if(hasFinshedLinehaul[k]){
+                    mustDoIntermediatePass[k]=true;
+                }
+            }
+            else if (!hasFinshedLinehaul[k] && saveListLinehaul.size() == 0) {
+                hasFinshedLinehaul[k] = true;
+                mustDoIntermediatePass[k]=true;
+            }
+
+
+            //Fase passo intermedio
+            if(hasFinshedLinehaul[k] && mustDoIntermediatePass[k]){
+
+                lastNodeAdded = tmpRoutes[k].getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
 
                 //inizio passo intermedio con inversione
                 std::vector<Node> tmpNodes = topology.getBackhaulNodes();
@@ -414,7 +569,7 @@ void cWpar(const Topology& topology,std::vector<Drawable_route>& tmpRoutes){
                 finishedRoutes++;
             }
         }
-
+        //passo alla route successiva
         k = ++k % topology.getVehicle_num();
     }
 
@@ -422,7 +577,7 @@ void cWpar(const Topology& topology,std::vector<Drawable_route>& tmpRoutes){
 
 }
 
-//CW parallelo
+//iterazione del CW parallelo randomizzato
 
 void cWparRandomStep(const Topology& topology,std::vector<Drawable_route>& tmpRoutes){
     size_t nNodesLinehaul=topology.getLinehaulNodes().size();
@@ -472,8 +627,6 @@ void cWparRandomStep(const Topology& topology,std::vector<Drawable_route>& tmpRo
     size_t nodeIndex2;
     Node node1;
     Node node2;
-    size_t nodeLeftBehindL = 0;
-    size_t nodeLeftBehindB = 0;
 
     //inizializzo le route con le coppie di linehaul con il saving maggiore
 
@@ -537,9 +690,7 @@ void cWparRandomStep(const Topology& topology,std::vector<Drawable_route>& tmpRo
                 }
             }
             else if (!hasFinshedLinehaul[k] && saveListLinehaul.size() == 0) {
-                /*finished[k] = true;
-                tmpRoutes[k].addLinehaul(topology.getLinehaulNodes()[0]);
-                finishedRoutes++;*/
+
                 hasFinshedLinehaul[k] = true;
                 mustDoIntermediatePass[k]=true;
             }
@@ -549,21 +700,7 @@ void cWparRandomStep(const Topology& topology,std::vector<Drawable_route>& tmpRo
             if(hasFinshedLinehaul[k] && mustDoIntermediatePass[k]){
 
                 lastNodeAdded = tmpRoutes[k].getLastNode().getIndex() - (topology.getBackhaulNodes().size() - 1);
-                //passo intermedio standard
-                /*size_t best = findBestBackhaulSuccessorFromLinehaulPar
-                        (topology.getLinehaulNodes()[lastNodeAdded],topology.getBackhaulNodes(),tmpRoutes,saveListBackhaul);
-                if(best != 0){
-                   tmpRoutes[k].addBackhaul(topology.getBackhaulNodes()[best]);
-                   mustDoIntermediatePass[k]=false;
-                }
-                else {
-                    finished[k] = true;
-                    tmpRoutes[k].addLinehaul(topology.getLinehaulNodes()[0]);
-                    finishedRoutes++;
-                }*/
-                //fine passo intermedio standard
 
-                //inizio passo intermedio con inversione
                 std::vector<Node> tmpNodes = topology.getBackhaulNodes();
 
                 if(gyakuKeiroNoJutsuPar(tmpRoutes[k],tmpNodes,tmpRoutes,saveListBackhaul)){
@@ -602,20 +739,20 @@ void cWparRandomStep(const Topology& topology,std::vector<Drawable_route>& tmpRo
             }
         }
 
-        //std::random_shuffle(tmpRoutes.begin(),tmpRoutes.end());
 
+        //passo a un altra route random
         k = std::rand() % topology.getVehicle_num();
 
-        //k = ++k % topology.getVehicle_num();
     }
 
     adjustLinehauls(tmpRoutes,topology);
 
 }
 
-void cWparRandomized(const Topology& topology,std::vector<Drawable_route>& routes,const std::string& fileName){
+//CW parallelo random con 100 iterazioni,restituisce la migliore
 
-    //std::ofstream myfile (fileName);
+void cWparRandomized(const Topology& topology,std::vector<Drawable_route>& routes){
+
 
     double minCost = 10000000.0;
 
@@ -648,30 +785,8 @@ void cWparRandomized(const Topology& topology,std::vector<Drawable_route>& route
             bestIteration = i;
         }
         
-        /*if(myfile.is_open()){
-            myfile << "iterazione " << i << ":";
-            myfile << "\n";
-            myfile << "\n";
-            myfile.close();
-        }
-
-
-
-        writeOnExistingFile(iterationRoutes,topology.getNode_num(),fileName);
-
-        myfile << "\n";
-        myfile << "\n";*/
-        
     }
 
-    /*if(myfile.is_open()){
-        myfile << "iterazione migliore : " << bestIteration;
-        myfile << "\n";
-        myfile << "costo totale : " << minCost;
-        myfile << "\n";
-        myfile << "\n";
-        myfile.close();
-    }*/
 
     routes = iterations[bestIteration];
 

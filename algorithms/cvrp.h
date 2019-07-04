@@ -17,10 +17,14 @@ bool gyakuKeiroNoJutsu(Route& route,std::vector<Node>& backhauls,std::list<std::
 
 void ultimateGyakuKeiroNoJutsu(Route& routeLinehaul,Route& routeBackhaul,Route& finalRoute);
 
-void cWseqRefined(const Topology& topology,std::vector<Drawable_route>& routes);
+void cWseqInversion(const Topology& topology,std::vector<Drawable_route>& routes);
 
-void cWseqRaw(const Topology& topology,std::vector<Drawable_route>& routes);
+void cWseqSqueamishInversion(const Topology& topology,std::vector<Drawable_route>& routes);
 
-void cWseqUltimate(const Topology& topology,std::vector<Drawable_route>& routes);
+void cWseq(const Topology& topology,std::vector<Drawable_route>& routes);
+
+void cWseqSqueamish(const Topology& topology,std::vector<Drawable_route>& routes);
+
+void cWseqMerge(const Topology& topology,std::vector<Drawable_route>& routes);
 
 #endif // CVRP_H

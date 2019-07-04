@@ -1,4 +1,4 @@
-#include "CVRPmanager.h"
+﻿#include "CVRPmanager.h"
 #include "ui_CVRPmanager.h"
 
 #include <QMessageBox>
@@ -16,26 +16,9 @@
 #include <algorithms/cvrpar.h>
 
 
-//Limits for the bounding box
-//It defines where points can be added
-//Do not change the following line
-//#define BOUNDINGBOX 1e+6
-#define BOUNDINGBOX 1e+5
-
-
-//Coordinates of the bounding triangle.
-//Use these coordinates to initialize the bounding triangle
-//of your triangulation.
-//Do not change these coordinates, they are made to avoid
-//numeric errors with the test input files.
-const cg3::Point2Dd BT_P1(1e+10, 0);
-const cg3::Point2Dd BT_P2(0, 1e+10);
-const cg3::Point2Dd BT_P3(-1e+10, -1e+10);
-
-
 //Constants for scene reset
 //Do not change the following lines
-const double SCENERADIUS = BOUNDINGBOX;
+const double SCENERADIUS = 1e+5;
 const cg3::Pointd SCENECENTER(0,0,0);
 
 
@@ -71,14 +54,6 @@ CVRPmanager::CVRPmanager(QWidget *parent) :
     mainWindow.updateGlCanvas();
 
     fitScene();
-
-    //You probably need to initialize your objects in the constructor. Write it here if you need, or add in the constructor
-    //for member initialization.
-    /********************************************************************************************************************/
-
-    /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
-
-    /********************************************************************************************************************/
 }
 
 
@@ -86,38 +61,8 @@ CVRPmanager::CVRPmanager(QWidget *parent) :
  * @brief Destructor of the manager
  */
 CVRPmanager::~CVRPmanager() {
-    //Try to avoid using dynamic objects whenever it is possible.
-    //
-    //In case you allocated dynamic objects in this manager, you
-    //should delete (deallocate) all of them when the application
-    //closes.
-    //Remember that each class which allocates dynamic objects
-    //should implement a destructor which deallocates them.    
-    //
-    //Example:
-    //      delete dynamicObject;
-    //      dynamicObject = nullptr;
-    /********************************************************************************************************************/
 
-    /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
-
-    /********************************************************************************************************************/
-
-    //When the manager is destroyed, the mainWindow should
-    //not have any reference to drawable objects.
-    //
-    //Example:
-    //      mainWindow.deleteObj(&delaunayTriangulationDrawableObject);
-    //  or
-    //      mainWindow.deleteObj(pointerTo_DelaunayTriangulationDrawableObject);
-    //
-    //Try to avoid using dynamic objects whenever it is possible.
-    /********************************************************************************************************************/
-
-    /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
-    /********************************************************************************************************************/
-
-    //Delete the bounding box drawable object
+    eraseDrawnRoutes();
 
     delete ui; //Delete interface
 }
@@ -127,73 +72,58 @@ CVRPmanager::~CVRPmanager() {
 /* ----- Private main methods ----- */
 
 /**
- * @brief Launch randomized incremental Delaunay triangulation algorithm for a vector of points.
- * Note that the vector could contain duplicates.
- * @param[in] points Vector of points
+ * @brief Launch the selected Cvrp algorithm
  */
-void CVRPmanager::computeCvrpAlgorithm(const Topology& topology,const std::string& fileName) {
-    //Launch your Delaunay triangulation algorithm here on the vector "inputPoints" in input
-    //(note that the vector could contain duplicates!!).
-    //Here you should call an algorithm (obviously defined in ANOTHER FILE!) which
-    //fills your output Triangulation data structure.
-    /********************************************************************************************************************/
+void CVRPmanager::computeCvrpAlgorithm(const Topology& topology) {
 
     int selected = this->ui->selectVersion->currentIndex();
 
     switch(selected)
     {
     case(0):
-        cWseqRefined(topology,this->singleRoutes);
+        cWseq(topology,this->singleRoutes);
         break;
     case(1):
-        cWseqRaw(topology,this->singleRoutes);
+        cWseqInversion(topology,this->singleRoutes);
         break;
     case(2):
-        cWseqUltimate(topology,this->singleRoutes);
+        cWseqSqueamish(topology,this->singleRoutes);
         break;
     case(3):
-        cWpar(topology,this->singleRoutes);
+        cWseqSqueamishInversion(topology,this->singleRoutes);
         break;
     case(4):
-        cWparRandomized(topology,this->singleRoutes,fileName);
+        cWseqMerge(topology,this->singleRoutes);
+        break;
+    case(5):
+        cWpar(topology,this->singleRoutes);
+        break;
+    case(6):
+        cWparInversion(topology,this->singleRoutes);
+        break;
+    case(7):
+        cWparRandomized(topology,this->singleRoutes);
         break;
     }
-    /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
-
-    /********************************************************************************************************************/
 }
 
 
 /**
- * @brief Clear data of the Delaunay Triangulation
+ * @brief Clear data of the routes
  */
 void CVRPmanager::clearRoutes() {
-    //Clear here your Delaunay Triangulation data structure.
-    /********************************************************************************************************************/
+
     eraseDrawnRoutes();
     this->singleRoutes.clear();
-    /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
 
-    /********************************************************************************************************************/
 }
 
 
 
 /**
- * @brief Draw the Delaunay Triangulation in the canvas
+ * @brief Draw the routes in the canvas
  */
 void CVRPmanager::drawRoutes() {
-    //Note that you could keep a Drawable Delaunay Triangulation object always
-    //rendered (even when it is empty), instead of deleting it from the main
-    //window and re-draw it again.
-    //Take as example DrawableBoundingBox2D in this manager (although it is const).
-    //This is actually a good approach: if you choose it, you probably
-    //do not need to write anything in the following area, since the canvas
-    //will automatically draw the updated Delaunay Triangulation.
-    //
-    //Draw your Delaunay Triangulation in the canvas here if you choose another
-    //approach.
-    /********************************************************************************************************************/
 
     std::string routeName;
 
@@ -205,102 +135,52 @@ void CVRPmanager::drawRoutes() {
         mainWindow.pushObj(&this->singleRoutes[i],routeName);
     }
 
-    /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
-
-    /********************************************************************************************************************/
-
     //Canvas update
     mainWindow.updateGlCanvas();
 }
 
 /**
- * @brief Erase drawn Delaunay Triangulation from the canvas
+ * @brief Erase drawn routes from the canvas
  */
 void CVRPmanager::eraseDrawnRoutes() {
-    //Note that you could keep a Drawable Delaunay Triangulation object always
-    //rendered (even when it is empty), instead of deleting it from the main
-    //window and re-draw it again.
-    //Take as example DrawableBoundingBox2D in this manager, even if it never
-    //changes.
-    //This is actually a good approach: if you choose it, you probably do
-    //not need to write anything in the following area because you should
-    //have cleared your Delaunay Triangulation some lines above. The canvas will
-    //automatically draw the updated Delaunay Triangulation.
-    //
-    //Remove the Drawable Delaunay Triangulation object from the canvas
-    //(mainWindow.deleteObj() which takes a reference) if you choose another
-    //approach.
-    //Deallocate it if you allocated it dynamically, even if you should try
-    //to avoid using dynamic objects whenever it is possible.
-    /********************************************************************************************************************/
-
 
     for(size_t i = 0;i < this->singleRoutes.size();i++){
 
         mainWindow.deleteObj(&this->singleRoutes[i]);
     }
-    /* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
-
-    /********************************************************************************************************************/
 
     //Canvas update
     mainWindow.updateGlCanvas();
 }
 
 
-//Define your private methods here if you need some
-/********************************************************************************************************************/
-
-/* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
-
-/********************************************************************************************************************/
-
-
-
-//Define your private slots methods here if you need some
-//They are needed if you want to implement voronoi
-/********************************************************************************************************************/
-
-/* WRITE YOUR CODE HERE! Read carefully the above comments! This line can be deleted */
-
-/********************************************************************************************************************/
-
-
-
-
-//----------------------------------------------------------------------------------------------
-//              Most likely, you will NOT need to write/edit code in the area below.
-//----------------------------------------------------------------------------------------------
-
-
 /* ----- Private utility methods ----- */
 
 /**
- * @brief Launch the algorithm for computing the Delaunay Triangulation
- * on the input points (a vector) of this manager and measure
+ * @brief Launch the algorithm of this manager and measure
  * its time efficiency.
  */
-void CVRPmanager::launchAlgorithmAndMeasureTime(const Topology& topology,const std::string& fileName) { //Do not write code here
+void CVRPmanager::launchAlgorithmAndMeasureTime(const Topology& topology) {
     //Output message
 
     //Timer for evaluating the efficiency of the algorithm
     cg3::Timer t("Computing cvrp");
 
-    //Launch delaunay algorithm on the vector of input points
-    computeCvrpAlgorithm(topology,fileName);
+    //Launch cvrp selected algorithm on the topology
+    computeCvrpAlgorithm(topology);
 
     //Timer stop and visualization (both on console and UI)
     t.stopAndPrint();
     ui->timeLabel->setNum(t.delay());
 
+    time = t.delay();
     std::cout << std::endl;
 }
 
 /**
  * @brief Change camera of the canvas to fit the scene
- * on the bounding box in which the points can be added.
  */
-void CVRPmanager::fitScene() { //Do not write code here
+void CVRPmanager::fitScene() {
     mainWindow.fitScene(SCENECENTER, SCENERADIUS);
 }
 
@@ -310,11 +190,11 @@ void CVRPmanager::fitScene() { //Do not write code here
 /* ----- UI slots for loading points ----- */
 
 /**
- * @brief Load points event handler.
+ * @brief Load topology from file
  *
- * Load input points from a file.
+ * Load the topology from a file.
  */
-void CVRPmanager::on_loadFilePushButton_clicked() { //Do not write code here
+void CVRPmanager::on_loadFilePushButton_clicked() {
     //File selector
     QString filename = QFileDialog::getOpenFileName(nullptr,
                        "Open points",
@@ -323,65 +203,74 @@ void CVRPmanager::on_loadFilePushButton_clicked() { //Do not write code here
 
     if (!filename.isEmpty()) {
 
-        //Delete from the canvas the Delaunay Triangulation
+        //Delete from the canvas the routes
         eraseDrawnRoutes();
 
         //Clear current data
         clearRoutes();
 
-        //Load input points in the vector (deleting the previous ones)
-        //this->points = FileUtils::getPointsFromFile(filename.toStdString());
+
 
         std::string name = filename.toStdString();
+
+        //Load the topology from the file
 
         Topology topology = FileUtils::getTopologyFromFile(filename.toStdString());
 
 
-        //Launch the algorithm on the current vector of points and measure
-        //its efficiency with a timer
         int selected = this->ui->selectVersion->currentIndex();
 
         switch(selected)
         {
         case(0):
-            name += "_cWseqRefined_test";
+            name += "_cWseq_test";
             break;
         case(1):
-            name += "_cWseqRaw_test";
+            name += "_cWseqInversion_test";
             break;
         case(2):
-            name += "_cWseqMastered_test";
+            name += "_cWseqSqueamish_test";
             break;
         case(3):
-            name += "_cWpar_test";
+            name += "_cWseqSqueamishInversion_test";
             break;
         case(4):
+            name += "_cWseqMerge_test";
+            break;
+        case(5):
+            name += "_cWpar_test";
+            break;
+        case(6):
+            name += "_cWparInversion_test";
+            break;
+        case(7):
             name += "_cWparRandomized_test";
             break;
         }
 
+        //Launch the algorithm and measure
+        //its efficiency with a timer
 
-        launchAlgorithmAndMeasureTime(topology,name);
+        launchAlgorithmAndMeasureTime(topology);
 
-        //if(selected!= 4){
-            writeOnExistingFile(this->singleRoutes,topology.getNode_num(),name);
-        //}
+        writeOnExistingFile(this->singleRoutes,topology.getNode_num(),name,time);
 
-        //Draw Delaunay Triangulation
+        //Draw the routes
         drawRoutes();
     }
 }
 
 /**
- * @brief Clear points button event handler.
+ * @brief Clear routes button event handler.
  *
- * It allows us to clear our Delaunay Triangulation input points.
+ * It allows us to clear our routes.
  */
-void CVRPmanager::on_clearRoutesPushButton_clicked() { //Do not write code here
+void CVRPmanager::on_clearRoutesPushButton_clicked() {
+
     //Clear current data
     clearRoutes();
 
-    //Delete from the canvas the Delaunay Triangulation
+    //Delete from the canvas the routes
     eraseDrawnRoutes();
 
     //Clear timer data
@@ -395,8 +284,8 @@ void CVRPmanager::on_clearRoutesPushButton_clicked() { //Do not write code here
  * @brief Reset scene event handler.
  *
  * It allows us to reset the camera of the canvas to
- * show/center the scene in the bounding box.
+ * show/center the scene
  */
-void CVRPmanager::on_resetScenePushButton_clicked() { //Do not write code here
+void CVRPmanager::on_resetScenePushButton_clicked() {
     fitScene();
 }
